@@ -51,5 +51,11 @@ def test_hybrid_narrative_against_real_ollama(db_session, tmp_path):
 
     assert result.narrative_text.strip()
     assert result.sentences
-    for s in result.sentences:
+
+    # The static conclusion section is fixed institutional boilerplate by
+    # design (deterministic.py's render_conclusion) and always carries
+    # evidence_keys=[] — every OTHER sentence must cite real evidence.
+    non_static = [s for s in result.sentences if s.get("section") != "conclusion"]
+    assert non_static
+    for s in non_static:
         assert s["evidence_keys"], f"sentence with no evidence_keys: {s['text']!r}"
