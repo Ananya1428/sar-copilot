@@ -7,10 +7,12 @@ Usage (inside the api container):
     python -m app.cli run-detection
     python -m app.cli assemble-cases
     python -m app.cli build-evidence --all
+    python -m app.cli generate-narrative --case-ref CASE-0001 --mode HYBRID
 """
 
 import json
 import subprocess
+import time
 from pathlib import Path
 
 import typer
@@ -20,9 +22,12 @@ from app.database import SessionLocal
 from app.domain.detection.orchestrator import run_detection
 from app.domain.evidence.builder import build_evidence_pack, persist_evidence_pack
 from app.domain.evidence.case_assembly import assemble_cases
+from app.domain.evidence.schema import EvidencePack as EvidencePackSchema
 from app.domain.ingestion.synthetic import generate_dataset
+from app.domain.narrative.engine import NarrativeEngine, persist_narrative
 from app.models import Customer
 from app.models.case import Case
+from app.models.evidence import EvidencePack as EvidencePackRow
 
 app = typer.Typer(help="SAR Copilot administrative CLI")
 
@@ -162,6 +167,66 @@ def build_evidence_cmd(
         session.close()
 
     typer.echo(json.dumps({"packs_built": len(built), "details": built}, indent=2, default=str))
+
+
+@app.command("generate-narrative")
+def generate_narrative_cmd(
+    case_ref: str = typer.Option(..., "--case-ref", help="e.g. CASE-0001"),
+    mode: str = typer.Option("HYBRID", "--mode", help="TEMPLATE | HYBRID | FREEFORM"),
+    seed: int = typer.Option(42, "--seed"),
+) -> None:
+    """Generate a narrative (blueprint §13) for one case, reusing its
+    latest EvidencePack if one already exists. Prints the generated text,
+    mode actually used (HYBRID can fall back to TEMPLATE_FALLBACK), and
+    wall-clock latency."""
+    session = SessionLocal()
+    try:
+        case = session.scalars(select(Case).where(Case.case_ref == case_ref)).first()
+        if case is None:
+            typer.echo(f"No case with case_ref={case_ref}", err=True)
+            raise typer.Exit(code=1)
+
+        pack_row = session.scalars(
+            select(EvidencePackRow).where(EvidencePackRow.case_id == case.id).order_by(EvidencePackRow.built_at.desc())
+        ).first()
+        if pack_row is None:
+            pack = build_evidence_pack(session, case)
+            pack_row = persist_evidence_pack(session, case, pack)
+        else:
+            pack = EvidencePackSchema.model_validate(pack_row.payload)
+
+        engine = NarrativeEngine()
+        start = time.monotonic()
+        result = engine.generate(pack, mode=mode, seed=seed)
+        elapsed = time.monotonic() - start
+
+        narrative_row = persist_narrative(session, case, pack_row, result)
+        session.commit()
+        # Captured before the session closes below — the ORM row is
+        # detached after that and its attributes can no longer be
+        # lazy-loaded (SQLAlchemy expires attributes on commit by default).
+        narrative_id, narrative_version = narrative_row.id, narrative_row.version
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    typer.echo(f"case_ref:         {case_ref}")
+    typer.echo(f"narrative_id:     {narrative_id}")
+    typer.echo(f"version:          {narrative_version}")
+    typer.echo(f"requested_mode:   {mode.upper()}")
+    typer.echo(f"actual_mode:      {result.mode}")
+    typer.echo(f"model_id:         {result.model_id}")
+    typer.echo(f"prompt_version:   {result.prompt_version}")
+    typer.echo(f"seed:             {result.seed}")
+    typer.echo(f"attempts:         {result.attempts}")
+    typer.echo(f"latency_seconds:  {elapsed:.2f}")
+    if result.notes:
+        typer.echo(f"notes:            {result.notes}")
+    typer.echo("")
+    typer.echo("--- NARRATIVE ---")
+    typer.echo(result.narrative_text)
 
 
 if __name__ == "__main__":

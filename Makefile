@@ -1,4 +1,4 @@
-.PHONY: up down fresh logs seed detect eval test
+.PHONY: up down fresh logs seed detect eval test assemble evidence narrative
 
 up:      ## Start everything (Part 1: postgres, redis, api)
 	docker compose up -d --build
@@ -27,4 +27,13 @@ eval:    ## Score detection against data/seed/ground_truth.json (per-typology pr
 test:
 	docker compose exec api pytest -v
 
-# TODO(part 3+): evidence pack builder, narrative engine, frontend.
+assemble: ## Group fired HIGH/MEDIUM alerts into opened Cases
+	docker compose exec api python -m app.cli assemble-cases
+
+evidence: ## Build an EvidencePack for every open case
+	docker compose exec api python -m app.cli build-evidence --all
+
+narrative: ## Generate a HYBRID-mode narrative for a case: make narrative CASE=CASE-0001
+	docker compose exec api python -m app.cli generate-narrative --case-ref $(CASE) --mode HYBRID
+
+# TODO(part 5+): verification pipeline, audit ledger, frontend.

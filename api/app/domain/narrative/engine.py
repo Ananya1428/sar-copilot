@@ -37,6 +37,8 @@ DEFAULT_TEMPERATURE = 0.1
 DEFAULT_MAX_TOKENS = 600
 FREEFORM_MAX_TOKENS = 2000
 
+_STATIC_SECTION_IDS = {s["id"] for s in NARRATIVE_SECTIONS if s["static"]}
+
 
 @dataclass
 class GenerationResult:
@@ -195,12 +197,23 @@ class NarrativeEngine:
 
     def _structural_check(self, sentences: list[dict]) -> tuple[bool, list[str]]:
         """Everything Part 4 can check without a real verifier: the
-        response parsed, wasn't empty, and every sentence cited SOME
-        evidence key. Catches a broken response, not a fabricated one —
-        Part 5 supplies the real hallucination checks via `self.verifier`."""
+        response parsed, wasn't empty, and every non-static sentence cited
+        SOME evidence key. Catches a broken response, not a fabricated one
+        — Part 5 supplies the real hallucination checks via `self.verifier`.
+
+        The static conclusion section is exempt from the evidence_keys
+        check: it's fixed institutional boilerplate by design (see
+        deterministic.py's `render_conclusion`), so its sentences always
+        carry `evidence_keys: []` — checking it here would mean HYBRID mode
+        could never pass regardless of how good the LLM's actual sections
+        were, since the static section rides along in every attempt.
+        """
         if not sentences:
             return False, ["no sentences produced by any section"]
-        unsupported = [s["text"] for s in sentences if not s.get("evidence_keys")]
+        checkable = [s for s in sentences if s.get("section") not in _STATIC_SECTION_IDS]
+        if not checkable:
+            return False, ["no non-static sentences produced by any section"]
+        unsupported = [s["text"] for s in checkable if not s.get("evidence_keys")]
         if unsupported:
             return False, [f"{len(unsupported)} sentence(s) cited no evidence_keys"]
         return True, []
@@ -247,3 +260,54 @@ class NarrativeEngine:
             attempts=1,
             notes=notes,
         )
+
+
+def _next_narrative_version(session: Session, case_id) -> int:
+    """Versions increment PER CASE, not per evidence pack — a case's
+    evidence can be rebuilt (Part 3: packs are immutable/versioned) between
+    narrative generations, but the narrative version sequence for that
+    case must keep counting up regardless of which pack backed each draft."""
+    last = session.scalar(
+        select(func.max(NarrativeRow.version))
+        .select_from(NarrativeRow)
+        .join(EvidencePackRow, NarrativeRow.pack_id == EvidencePackRow.id)
+        .where(EvidencePackRow.case_id == case_id)
+    )
+    return (last or 0) + 1
+
+
+def persist_narrative(session: Session, case: Case, pack_row: EvidencePackRow, result: GenerationResult) -> NarrativeRow:
+    """Persists a GenerationResult into Part 1's Narrative/NarrativeSentence
+    rows. Reproducibility (blueprint §15.3) needs `pack_id` (-> the pack
+    row's own `content_hash`), `prompt_version`, `model_id`, and `seed` —
+    all recorded here; no separate content_hash column is needed on
+    Narrative itself since it's reachable via `narrative.pack.content_hash`.
+    `verified=False` always, for now — Part 5 is what earns that flag.
+    """
+    version = _next_narrative_version(session, case.id)
+    narrative = NarrativeRow(
+        pack_id=pack_row.id,
+        version=version,
+        body=result.narrative_text,
+        generation_mode=result.mode,
+        model_id=result.model_id,
+        prompt_version=result.prompt_version,
+        seed=result.seed,
+        verified=False,
+    )
+    session.add(narrative)
+    session.flush()
+
+    for ordinal, sentence in enumerate(result.sentences, start=1):
+        session.add(
+            NarrativeSentenceRow(
+                narrative_id=narrative.id,
+                ordinal=ordinal,
+                text=sentence["text"],
+                w_category=sentence.get("section"),
+                evidence_keys=sentence.get("evidence_keys") or [],
+                grounding_score=None,  # Part 5 concept — no real verifier scoring sentences yet
+            )
+        )
+    session.flush()
+    return narrative

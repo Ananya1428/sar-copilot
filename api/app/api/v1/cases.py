@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.deps import get_db
 from app.domain.detection.scoring import band_for_score
 from app.domain.evidence.builder import build_evidence_pack, persist_evidence_pack
+from app.domain.evidence.schema import EvidencePack as EvidencePackSchema
+from app.domain.narrative.engine import NarrativeEngine, persist_narrative
 from app.models.case import Case
 from app.models.evidence import EvidencePack as EvidencePackRow
 
@@ -58,9 +60,51 @@ def rebuild_evidence(case_id: str, db: Session = Depends(get_db)):
 def get_latest_evidence(case_id: str, db: Session = Depends(get_db)):
     """Returns the most recently built EvidencePack for this case."""
     case = _get_case_or_404(db, case_id)
-    row = db.scalars(
-        select(EvidencePackRow).where(EvidencePackRow.case_id == case.id).order_by(EvidencePackRow.built_at.desc())
-    ).first()
+    row = _latest_pack_row(db, case)
     if row is None:
         raise HTTPException(status_code=404, detail="no evidence pack built yet for this case")
     return row.payload
+
+
+def _latest_pack_row(db: Session, case: Case) -> EvidencePackRow | None:
+    return db.scalars(
+        select(EvidencePackRow).where(EvidencePackRow.case_id == case.id).order_by(EvidencePackRow.built_at.desc())
+    ).first()
+
+
+@router.post("/{case_id}/narrative")
+def generate_case_narrative(case_id: str, mode: str = "HYBRID", seed: int = 42, db: Session = Depends(get_db)):
+    """Generates a narrative for this case (blueprint §13), reusing the
+    case's latest EvidencePack if one already exists rather than building
+    a new one on every call — packs are immutable, so an existing one is
+    still exactly as valid as a fresh rebuild would be."""
+    case = _get_case_or_404(db, case_id)
+
+    pack_row = _latest_pack_row(db, case)
+    if pack_row is None:
+        pack = build_evidence_pack(db, case)
+        pack_row = persist_evidence_pack(db, case, pack)
+    else:
+        pack = EvidencePackSchema.model_validate(pack_row.payload)
+
+    engine = NarrativeEngine()
+    result = engine.generate(pack, mode=mode, seed=seed)
+    narrative_row = persist_narrative(db, case, pack_row, result)
+    db.commit()
+
+    return {
+        "id": str(narrative_row.id),
+        "case_ref": case.case_ref,
+        "pack_id": str(pack_row.id),
+        "version": narrative_row.version,
+        "generation_mode": narrative_row.generation_mode,
+        "model_id": narrative_row.model_id,
+        "prompt_version": narrative_row.prompt_version,
+        "seed": narrative_row.seed,
+        "body": narrative_row.body,
+        "sentences": [
+            {"ordinal": i, "text": s["text"], "section": s.get("section"), "evidence_keys": s.get("evidence_keys", [])}
+            for i, s in enumerate(result.sentences, start=1)
+        ],
+        "notes": result.notes,
+    }
