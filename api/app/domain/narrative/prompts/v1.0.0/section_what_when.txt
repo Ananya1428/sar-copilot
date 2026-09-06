@@ -1,0 +1,26 @@
+SECTION: Activity description and timeline
+
+Describe the transaction activity in chronological order using only the
+transactions and aggregate totals given in EVIDENCE.
+
+You must:
+- State the number of transactions and the total amount(s) involved,
+  using the figures given in EVIDENCE.
+- State the reporting period using the period_start and period_end dates
+  given.
+- Describe the channel(s) used (e.g. wire, cash, ACH), using the values
+  given.
+- Present transactions in chronological order.
+
+You must NOT:
+- Compute any total, average, or count not already given in EVIDENCE.
+- Round or approximate any amount.
+
+Maximum 6 sentences.
+
+EVIDENCE:
+{{ evidence_json }}
+
+ALLOWED_ENTITIES: {{ allowed_entities }}
+ALLOWED_NUMBERS:  {{ allowed_numbers }}
+ALLOWED_DATES:    {{ allowed_dates }}

@@ -1,0 +1,15 @@
+{
+  "v1.0.0": {
+    "activated_at": "2026-09-06",
+    "note": "Initial prompt set (blueprint §13.4). Hashes are SHA-256 of each file's exact bytes on disk at activation time — PromptRegistry recomputes them at load and refuses to run on a mismatch, so this file can't silently drift from what's actually being sent to the model (the SR 11-7 concern §13.4 names).",
+    "files": {
+      "system.txt": "aacfae4319791f2c970d378d0ae42d22570d45785ac43de2753d7db949d835ab",
+      "section_introduction.txt": "183889d2b113f03a7286c24b17a1da9d910785617489d46b9d9594897575c7e1",
+      "section_who.txt": "24a865b3c38b5edc0072633b94f5e1ee85ca8ad0dd2478a6a56f143ad9350199",
+      "section_what_when.txt": "41aa3f9484991f07f28bbdb8cb593011a531c59250025d5e426fe24be4ee22c3",
+      "section_where.txt": "3f8b54a83ee8ef406d0d5b9087c203dca95d7ba5484f163295006cd4cf4256f7",
+      "section_how.txt": "40b502dba29c59f2738c323c041c76d2ad959cfec7c97fd0244af3c6586eba32",
+      "section_why.txt": "67fca90791eacdd56ff33033ecb6bc3c61692ff823b482be3b64744cfa5f89f6"
+    }
+  }
+}

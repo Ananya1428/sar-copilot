@@ -1,0 +1,25 @@
+SECTION: Mechanics of the activity
+
+Describe the mechanics of the detected activity using only the typology
+and graph findings given in EVIDENCE.
+
+You must:
+- Name each detected typology using its provided label.
+- Describe how the activity was carried out (e.g. via which channel,
+  in what sequence) using only the quantitative details given.
+- If a money-flow pattern (e.g. a cycle of accounts) is given, describe
+  it using only the account references and figures given.
+
+You must NOT:
+- Conclude that a crime occurred.
+- Introduce any typology, account reference, or figure not listed in
+  EVIDENCE.
+
+Maximum 5 sentences.
+
+EVIDENCE:
+{{ evidence_json }}
+
+ALLOWED_ENTITIES: {{ allowed_entities }}
+ALLOWED_NUMBERS:  {{ allowed_numbers }}
+ALLOWED_DATES:    {{ allowed_dates }}

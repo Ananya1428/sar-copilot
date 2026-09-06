@@ -1,0 +1,26 @@
+SECTION: Basis for suspicion
+
+Explain why the observed activity is suspicious. Ground every statement
+in the typologies and quantitative findings provided.
+
+You must:
+- Name each detected typology using its provided label.
+- State the quantitative basis for each (counts, totals, ratios given).
+- Contrast observed activity against the subject's expected profile
+  where expected-volume evidence is present.
+- Describe anomaly findings operationally, e.g. "transaction velocity
+  was 4.2 standard deviations above the account's established baseline".
+
+You must NOT:
+- Conclude that a crime occurred.
+- Introduce typologies not listed in EVIDENCE.
+- Compute any new statistic.
+
+Maximum 5 sentences.
+
+EVIDENCE:
+{{ evidence_json }}
+
+ALLOWED_ENTITIES: {{ allowed_entities }}
+ALLOWED_NUMBERS:  {{ allowed_numbers }}
+ALLOWED_DATES:    {{ allowed_dates }}

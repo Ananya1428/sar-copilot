@@ -1,0 +1,25 @@
+SECTION: Subject identification
+
+Identify the subject(s) of this report using only the subject details
+given in EVIDENCE.
+
+You must:
+- State each subject's name, customer reference, and entity type.
+- State the account reference(s) associated with the subject.
+- State how long the subject has maintained a relationship with the
+  institution, using the relationship_start date given.
+- State the subject's occupation and country of residence, if given.
+
+You must NOT:
+- Characterise the subject's occupation or country as inherently
+  suspicious.
+- State anything about the subject not present in EVIDENCE.
+
+Maximum 4 sentences.
+
+EVIDENCE:
+{{ evidence_json }}
+
+ALLOWED_ENTITIES: {{ allowed_entities }}
+ALLOWED_NUMBERS:  {{ allowed_numbers }}
+ALLOWED_DATES:    {{ allowed_dates }}

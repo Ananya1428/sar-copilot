@@ -1,0 +1,23 @@
+SECTION: Locations and jurisdictions
+
+Describe where the activity took place using only the counterparty
+countries and account references given in EVIDENCE.
+
+You must:
+- Name any counterparty countries given in EVIDENCE.
+- Name the account reference(s) through which activity occurred.
+
+You must NOT:
+- Characterise any jurisdiction as inherently high-risk in your own words
+  — if a jurisdiction's risk status is itself part of EVIDENCE, state it
+  as given; otherwise name the location only.
+- Introduce any location not present in EVIDENCE.
+
+Maximum 3 sentences.
+
+EVIDENCE:
+{{ evidence_json }}
+
+ALLOWED_ENTITIES: {{ allowed_entities }}
+ALLOWED_NUMBERS:  {{ allowed_numbers }}
+ALLOWED_DATES:    {{ allowed_dates }}

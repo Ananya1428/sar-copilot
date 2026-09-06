@@ -29,20 +29,37 @@ services:
       retries: 10
     networks: [sarnet]
 
-  # TODO(part 2+): local LLM runtime for narrative generation.
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   volumes:
-  #     - ollamadata:/root/.ollama
-  #     - ./scripts/pull-model.sh:/pull-model.sh:ro
-  #   entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 8 && /pull-model.sh && wait"]
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "ollama list | grep -q llama3.1 || exit 1"]
-  #     interval: 15s
-  #     timeout: 10s
-  #     retries: 30
-  #     start_period: 300s
-  #   networks: [sarnet]
+  ollama:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: 0.0.0.0
+      LLM_MODEL: ${LLM_MODEL:-llama3.1:8b-instruct-q4_K_M}
+    volumes:
+      - ollamadata:/root/.ollama
+      - ./scripts/pull-model.sh:/pull-model.sh:ro
+    entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 5 && sh /pull-model.sh && wait"]
+    ports:
+      - "11434:11434"
+    # GPU reservation (Compose Specification, works with `docker compose up`
+    # directly — not Swarm-only). Confirmed working on this machine's RTX
+    # 4060 via `nvidia-smi` + `docker run --gpus all ... nvidia-smi` before
+    # this was added. No CPU-only fallback path — GPU is confirmed present,
+    # so this targets it directly (see blueprint §9.3's model choice
+    # rationale: an 8B model at q4_K_M fits comfortably in 8GB VRAM).
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list | grep -q llama3.1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 300s  # first pull (~5GB) is slow
+    networks: [sarnet]
 
   api:
     build:
@@ -62,7 +79,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis:    { condition: service_healthy }
-      # ollama: { condition: service_started }   # TODO(part 2+)
+      ollama:   { condition: service_started }  # not service_healthy — don't block api startup on the multi-minute first model pull
     command: >
       sh -c "alembic upgrade head &&
              python -m app.cli seed --if-empty &&
@@ -117,7 +134,7 @@ services:
 volumes:
   pgdata:
   redisdata:
-  # ollamadata:   # TODO(part 2+)
+  ollamadata:
 
 networks:
   sarnet:

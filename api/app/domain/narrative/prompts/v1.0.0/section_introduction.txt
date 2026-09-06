@@ -1,0 +1,24 @@
+SECTION: Introduction and basis for filing
+
+Write an opening statement describing the basis for this report. State who
+the activity concerns, the reporting period, and the total amount involved.
+
+You must:
+- Name the subject using the name given in EVIDENCE.
+- State the reporting period using the period_start and period_end dates
+  given in EVIDENCE.
+- State the total amount involved using a total figure given in EVIDENCE.
+
+You must NOT:
+- Draw a conclusion about criminal activity.
+- Introduce any typology detail beyond naming that suspicious activity
+  was identified — the mechanics belong in later sections.
+
+Maximum 3 sentences.
+
+EVIDENCE:
+{{ evidence_json }}
+
+ALLOWED_ENTITIES: {{ allowed_entities }}
+ALLOWED_NUMBERS:  {{ allowed_numbers }}
+ALLOWED_DATES:    {{ allowed_dates }}
