@@ -56,9 +56,19 @@ _classifier_load_error: str | None = None
 
 
 def _item_referenced(item: EvidenceItem, text: str) -> bool:
+    """Excluding "." from the boundary (in addition to \\w) prevents a
+    short numeric value from partially matching inside a longer decimal
+    (e.g. "600" inside "8600.00") — but that exclusion must apply only
+    when the value itself is numeric. Applied unconditionally, it also
+    blocks a name from matching at the end of a sentence, since "." is
+    almost always the character right after it (e.g. "... Rajesh Mehta."
+    — the period is the sentence's full stop, not part of the name)."""
     if not item.display_value:
         return False
-    pattern = r"(?<![\w.])" + re.escape(item.display_value) + r"(?![\w.])"
+    value = item.display_value
+    left = r"(?<![\w.])" if value[0].isdigit() else r"(?<!\w)"
+    right = r"(?![\w.])" if value[-1].isdigit() else r"(?!\w)"
+    pattern = left + re.escape(value) + right
     return re.search(pattern, text) is not None
 
 

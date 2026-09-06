@@ -20,7 +20,21 @@ from app.domain.verification.types import CheckResult, Violation
 
 # Matches an optional leading '$', digit groups with optional ',' thousands
 # separators, an optional decimal part, and an optional trailing '%'.
-NUMBER_PATTERN = re.compile(r"\$?-?\d[\d,]*(?:\.\d+)?%?")
+#
+# Deliberately no leading '-' for negative numbers: every numeric
+# EvidenceItem in this domain (amounts, counts) is non-negative (see
+# evidence/schema.py — Decimal fields, never negative in this domain).
+NUMBER_PATTERN = re.compile(r"\$?\d[\d,]*(?:\.\d+)?%?")
+
+# A reference code's digit run (e.g. "4471" in "CUS-4471", "88213" in
+# "ACC-88213") is never itself an amount/count EvidenceItem, but IS a real
+# \d+ sequence that NUMBER_PATTERN would otherwise flag as an ungrounded
+# number. A single-character lookbehind for '-' is not enough: finditer
+# still finds a match starting one digit later within the same run (e.g.
+# "471" out of "4471", still failing) since THAT match's own start isn't
+# preceded by a hyphen. The fix has to exclude the run's full span, not
+# just its first character.
+REFERENCE_CODE = re.compile(r"[A-Za-z]+-\d+")
 
 
 def _date_spans(text: str) -> list[tuple[int, int]]:
@@ -30,6 +44,10 @@ def _date_spans(text: str) -> list[tuple[int, int]]:
     numeric token. Dates are the temporal check's job (temporal.py); the
     numeric check must not double-police the same characters."""
     return [m.span() for m in ISO_DATE.finditer(text)] + [m.span() for m in NATURAL_DATE.finditer(text)]
+
+
+def _reference_code_spans(text: str) -> list[tuple[int, int]]:
+    return [m.span() for m in REFERENCE_CODE.finditer(text)]
 
 
 def _overlaps_any(position: int, spans: list[tuple[int, int]]) -> bool:
@@ -64,9 +82,9 @@ def check_numeric(sentences: list[dict], pack: EvidencePack) -> CheckResult:
     violations: list[Violation] = []
     for idx, sentence in enumerate(sentences):
         text = sentence.get("text", "")
-        date_spans = _date_spans(text)
+        excluded_spans = _date_spans(text) + _reference_code_spans(text)
         for match in NUMBER_PATTERN.finditer(text):
-            if _overlaps_any(match.start(), date_spans):
+            if _overlaps_any(match.start(), excluded_spans):
                 continue
             token = match.group()
             value = _normalize(token)

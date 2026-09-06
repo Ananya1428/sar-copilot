@@ -50,6 +50,21 @@ def test_dates_are_not_mistaken_for_numeric_tokens():
     assert result.passed, result.violations
 
 
+def test_reference_code_digit_suffix_is_not_mistaken_for_a_number():
+    """"CUS-4471" and "ACC-88213" must not be read as the bare, ungrounded
+    numbers 4471/88213 — a customer/account reference's numeric suffix is
+    never itself an amount/count EvidenceItem. This is exactly the bug
+    that surfaced when the checks were run against real narrative text
+    (see numeric.py's module docstring on the `(?<!-)` exclusion)."""
+    pack = make_sample_pack()
+    sentences = [{
+        "text": "Customer reference CUS-4471 holds account ACC-88213.",
+        "section": "who", "evidence_keys": [],
+    }]
+    result = check_numeric(sentences, pack)
+    assert result.passed, result.violations
+
+
 def test_currency_symbol_and_comma_normalisation():
     pack = make_sample_pack()
     sentences = [{"text": "A credit of $8,600.00 was recorded.", "section": "what_when", "evidence_keys": []}]

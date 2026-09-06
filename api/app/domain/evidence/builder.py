@@ -49,7 +49,9 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.domain.detection.thresholds import RULE_WEIGHTS
+from jinja2 import Template
+
+from app.domain.detection.thresholds import RAPID_MOVEMENT_WINDOW_HOURS, RULE_WEIGHTS
 from app.domain.evidence.schema import (
     AggregateEvidence,
     EvidenceItem,
@@ -92,6 +94,33 @@ QUANT_BASIS_FIELD_TYPES: dict[str, dict[str, str]] = {
     "CIRCULAR_FLOW": {"retention": "count", "hops": "count"},
     "ML_ANOMALY": {"ml_score": "count"},
 }
+
+# A real bug found via Part 5's numeric-grounding check against real data:
+# deterministic.py's typology summary sentences don't always print a
+# quantitative_basis field verbatim — several are percentage-scaled and/or
+# rounded for readability (e.g. CIRCULAR_FLOW's raw `retention=0.797`
+# renders as "79.7 percent"). If this EvidenceItem's display_value were the
+# raw `str(0.797)`, it could never match the narrative's real "79.7" — the
+# check would (and did) reject a perfectly grounded, unmodified template
+# sentence. Rendering through the IDENTICAL Jinja filter expression
+# deterministic.py's `_TYPOLOGY_SUMMARY_TEMPLATES` uses (rather than
+# reimplementing the rounding independently in Python) guarantees the two
+# can never drift apart again.
+_QUANT_FIELD_DISPLAY_TRANSFORMS: dict[tuple[str, str], str] = {
+    ("CIRCULAR_FLOW", "retention"): "{{ (v * 100) | round(1) }}",
+    ("RAPID_MOVEMENT", "moved_fraction"): "{{ (v * 100) | round(1) }}",
+    ("CASH_INTENSIVE", "cash_ratio"): "{{ (v * 100) | round(1) }}",
+    ("ROUND_AMOUNTS", "round_amount_ratio"): "{{ (v * 100) | round(1) }}",
+    ("DORMANT_REACTIVATION", "reactivation_multiplier"): "{{ v | round(1) }}",
+    ("PROFILE_DEVIATION", "volume_vs_expected_ratio"): "{{ v | round(1) }}",
+}
+
+
+def _quant_field_display(code: str, field: str, value) -> str:
+    expr = _QUANT_FIELD_DISPLAY_TRANSFORMS.get((code, field))
+    if expr is None:
+        return str(value)
+    return Template(expr).render(v=value)
 
 _VOLATILE_FIELDS = {"pack_id", "built_at", "content_hash"}
 
@@ -268,12 +297,24 @@ def _build_typologies(alerts: list[Alert], typology_dict: dict, items: dict[str,
         for field, item_type in QUANT_BASIS_FIELD_TYPES.get(code, {}).items():
             if field not in basis:
                 continue
-            display = str(basis[field])
+            display = _quant_field_display(code, field, basis[field])
             _add_item(items, f"typology.{code}.quantitative_basis.{field}", item_type, display, {field: basis[field]}, "alerts", alert.id, f"rule_evidence.{field}")
 
         if code == "CROSS_BORDER_RISK":
             for country in basis.get("countries", []):
                 _add_item(items, f"typology.{code}.quantitative_basis.countries.{country}", "location", country, {"country": country}, "alerts", alert.id, "rule_evidence.countries")
+
+        if code == "RAPID_MOVEMENT":
+            # A fixed RULE PARAMETER (thresholds.RAPID_MOVEMENT_WINDOW_HOURS),
+            # identical across every case, not a per-case fact from
+            # `rule_evidence` — deterministic.py's summary sentence states
+            # it (see its `window_hours` render kwarg), so it must be a real,
+            # enumerable EvidenceItem too, not a bare hardcoded number in the
+            # template string.
+            _add_item(
+                items, f"typology.{code}.quantitative_basis.window_hours", "count", str(RAPID_MOVEMENT_WINDOW_HOURS),
+                {"window_hours": RAPID_MOVEMENT_WINDOW_HOURS}, "alerts", alert.id, "detection.thresholds.RAPID_MOVEMENT_WINDOW_HOURS",
+            )
 
     return result
 

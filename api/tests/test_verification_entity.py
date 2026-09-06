@@ -61,6 +61,25 @@ def test_typology_label_words_are_not_mistaken_for_fabricated_entities():
     assert result.passed, result.violations
 
 
+def test_comma_containing_occupation_is_recognised_as_grounded():
+    """A real bug found against real CASE-0003 data: Faker's job() titles
+    often contain a comma ("Geologist, engineering"), which the sequence
+    regex alone truncates at — the full value must still be recognised
+    as grounded via the full-item-at-position fallback."""
+    pack = make_sample_pack()
+    for subject in pack.subjects:
+        subject.occupation = "Geologist, engineering"
+    pack.items = [i for i in pack.items if i.key != "subject.primary.occupation"]
+    pack.items.append(
+        pack.items[0].model_copy(update={
+            "key": "subject.primary.occupation", "type": "entity", "display_value": "Geologist, engineering",
+        })
+    )
+    sentences = [{"text": "The subject is recorded as Geologist, engineering and resident in IN.", "section": "who", "evidence_keys": []}]
+    result = check_entities(sentences, pack)
+    assert result.passed, result.violations
+
+
 def test_grounded_country_code_passes_but_fabricated_one_fails():
     pack = make_sample_pack()
     ok = check_entities([{"text": "A counterparty was located in IN.", "section": "where", "evidence_keys": []}], pack)

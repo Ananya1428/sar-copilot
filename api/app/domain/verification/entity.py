@@ -29,6 +29,19 @@ quotes it verbatim (deterministic.py's `render_how`/`render_why`). Any
 capitalised word appearing inside a real typology's own label is exempt
 for the same reason stopwords are: it's real, just not flattened as an
 entity item.
+
+A real-data case caught one more gap during development: Faker's `job()`
+provider (used by the synthetic generator for `occupation`) routinely
+returns titles containing a comma — "Geologist, engineering", "Engineer,
+agricultural" — so the flattened EvidenceItem's `display_value` itself
+contains a comma. `CAPITALIZED_SEQUENCE` stops at the comma (it isn't a
+letter or space), so it only ever captures "Geologist", never the full
+"Geologist, engineering" — meaning an exact `seq not in allowed` check
+would reject a value that's fully, correctly grounded, just longer than
+what the regex captured. Before flagging a candidate, `_matches_full_item`
+checks whether any real allowed entity starts at that exact text
+position — if so, it's grounded regardless of how far the sequence regex
+itself extended.
 """
 
 import re
@@ -67,6 +80,14 @@ def _typology_label_phrases(pack: EvidencePack) -> set[str]:
     return phrases
 
 
+def _matches_full_item_at(text: str, position: int, allowed: set[str]) -> bool:
+    """True if some allowed entity string appears starting exactly at
+    `position` in `text` — used when the regex-captured sequence is a
+    truncated PREFIX of a longer grounded value (e.g. a comma-containing
+    Faker job title)."""
+    return any(value and text.startswith(value, position) for value in allowed)
+
+
 def check_entities(sentences: list[dict], pack: EvidencePack) -> CheckResult:
     allowed = pack.allowed_entities()
     label_phrases = _typology_label_phrases(pack)
@@ -83,6 +104,8 @@ def check_entities(sentences: list[dict], pack: EvidencePack) -> CheckResult:
             if _is_acronym_like(seq):
                 continue
             if seq in label_phrases:
+                continue
+            if _matches_full_item_at(text, match.start(), allowed):
                 continue
             if seq not in allowed:
                 violations.append(

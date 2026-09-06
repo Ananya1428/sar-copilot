@@ -83,13 +83,21 @@ class NarrativeEngine:
         if mode != "HYBRID":
             raise ValueError(f"unknown generation mode: {mode!r}")
 
-        last_notes: list[str] = []
+        # Accumulated across ALL attempts, not just the last one — so that
+        # when a later attempt succeeds, its result still carries *why*
+        # an earlier attempt was rejected (e.g. "verification failed: ...").
+        # A prior version of this loop reassigned (rather than accumulated)
+        # this per attempt, silently losing every earlier attempt's
+        # diagnostic the moment a later attempt succeeded or failed anew.
+        all_notes: list[str] = []
+        last_attempt_notes: list[str] = []
         for attempt in range(1, self.max_attempts + 1):
             attempt_seed = seed + attempt - 1
             sentences, notes = self._generate_sections(pack, attempt_seed)
             structural_ok, structural_notes = self._structural_check(sentences)
-            notes = notes + structural_notes
-            last_notes = notes
+            attempt_notes = notes + structural_notes
+            all_notes.extend(attempt_notes)
+            last_attempt_notes = attempt_notes
 
             if not structural_ok:
                 continue
@@ -98,7 +106,9 @@ class NarrativeEngine:
             if self.verifier is not None:
                 report = self.verifier.verify(sentences, pack)
                 if not getattr(report, "passed", False):
-                    last_notes.append(f"verification failed: {report}")
+                    failure_note = f"verification failed: {report}"
+                    all_notes.append(failure_note)
+                    last_attempt_notes = attempt_notes + [failure_note]
                     continue
 
             return GenerationResult(
@@ -109,15 +119,15 @@ class NarrativeEngine:
                 prompt_version=self.prompts.version,
                 seed=attempt_seed,
                 attempts=attempt,
-                notes=notes,
+                notes=all_notes,
                 verification_report=report,
             )
 
         result = self._deterministic(pack, seed, attempts=self.max_attempts)
         result.mode = "TEMPLATE_FALLBACK"
-        result.notes.append(
-            f"HYBRID generation failed after {self.max_attempts} attempt(s): {'; '.join(last_notes) or 'no diagnostic notes'}"
-        )
+        result.notes = all_notes + result.notes + [
+            f"HYBRID generation failed after {self.max_attempts} attempt(s): {'; '.join(last_attempt_notes) or 'no diagnostic notes'}"
+        ]
         return result
 
     def _deterministic(self, pack: EvidencePack, seed: int, attempts: int) -> GenerationResult:

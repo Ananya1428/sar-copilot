@@ -69,12 +69,22 @@ def check_temporal(sentences: list[dict], pack: EvidencePack) -> CheckResult:
     period_end = pack.aggregates.period_end
 
     violations: list[Violation] = []
-    what_when_dates: list[date] = []
+    # One representative date PER SENTENCE (its first), not every date
+    # flattened across the whole section: a what_when section routinely
+    # opens with a summary sentence stating both period_start and
+    # period_end together (see deterministic.py's `render_what_when`),
+    # and per-transaction sentences after it legitimately start back from
+    # period_start again. Flattening every date into one global sequence
+    # would misread that restart as an ordering violation; what actually
+    # matters is that sentences, in the order they're written, don't walk
+    # backwards through time.
+    what_when_first_dates: list[date] = []
 
     for idx, sentence in enumerate(sentences):
         text = sentence.get("text", "")
         section = sentence.get("section")
-        for token, parsed, position in _find_dates(text):
+        sentence_dates = _find_dates(text)
+        for token, parsed, position in sentence_dates:
             if parsed not in allowed_dates:
                 violations.append(
                     Violation(
@@ -83,17 +93,17 @@ def check_temporal(sentences: list[dict], pack: EvidencePack) -> CheckResult:
                     )
                 )
                 continue
-            if section == "what_when":
-                if not (period_start <= parsed <= period_end):
-                    violations.append(
-                        Violation(
-                            message=f"date {token!r} falls outside the evidence period ({period_start} to {period_end})",
-                            sentence_index=idx, section=section, token=token, position=position,
-                        )
+            if section == "what_when" and not (period_start <= parsed <= period_end):
+                violations.append(
+                    Violation(
+                        message=f"date {token!r} falls outside the evidence period ({period_start} to {period_end})",
+                        sentence_index=idx, section=section, token=token, position=position,
                     )
-                what_when_dates.append(parsed)
+                )
+        if section == "what_when" and sentence_dates:
+            what_when_first_dates.append(sentence_dates[0][1])
 
-    if what_when_dates != sorted(what_when_dates):
+    if what_when_first_dates != sorted(what_when_first_dates):
         violations.append(
             Violation(message="dates in the what_when section are not in chronological order", section="what_when")
         )

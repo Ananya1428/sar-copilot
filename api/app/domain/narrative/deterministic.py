@@ -15,6 +15,7 @@ from collections.abc import Callable
 
 from jinja2 import Template
 
+from app.domain.detection.thresholds import RAPID_MOVEMENT_WINDOW_HOURS
 from app.domain.evidence.builder import QUANT_BASIS_FIELD_TYPES
 from app.domain.evidence.schema import EvidencePack, TypologyEvidence
 from app.domain.narrative.sections import NARRATIVE_SECTIONS
@@ -28,7 +29,7 @@ MAX_TRANSACTION_SENTENCES = 10
 _TYPOLOGY_SUMMARY_TEMPLATES: dict[str, str] = {
     "STRUCTURING": "{{ b.txn_count }} cash deposits totalling {{ b.total }}, each structured below the reporting threshold",
     "SMURFING": "{{ b.distinct_originators }} distinct originators contributed deposits within the observed window",
-    "RAPID_MOVEMENT": "{{ (b.moved_fraction * 100) | round(1) }} percent of a {{ b.credit_amount }} credit was moved out again within 48 hours",
+    "RAPID_MOVEMENT": "{{ (b.moved_fraction * 100) | round(1) }} percent of a {{ b.credit_amount }} credit was moved out again within {{ window_hours }} hours",
     "CIRCULAR_FLOW": "funds moved through a {{ b.hops }}-hop cycle of accounts with {{ (b.retention * 100) | round(1) }} percent value retention",
     "HIGH_VELOCITY": "{{ b.peak_count }} transactions occurred on {{ b.peak_day }}, against a baseline average of {{ b.baseline_mean }}",
     "DORMANT_REACTIVATION": "following {{ b.dormant_days }} days without activity, transaction volume resumed at {{ b.reactivation_multiplier | round(1) }} times the prior daily average",
@@ -44,7 +45,13 @@ def _typology_summary(typ: TypologyEvidence) -> str:
     tmpl = _TYPOLOGY_SUMMARY_TEMPLATES.get(typ.code)
     if tmpl is None:
         return typ.description
-    return Template(tmpl).render(b=typ.quantitative_basis)
+    # `window_hours` is a fixed RULE PARAMETER (RAPID_MOVEMENT's detection
+    # window, thresholds.py), not a per-case fact — it's the same for
+    # every case, so it isn't in `quantitative_basis` at all. It's passed
+    # here (rather than hardcoded into the template string) so builder.py
+    # can flatten the identical value as a real EvidenceItem too — see
+    # builder.py's `RAPID_MOVEMENT` handling for why that match matters.
+    return Template(tmpl).render(b=typ.quantitative_basis, window_hours=RAPID_MOVEMENT_WINDOW_HOURS)
 
 
 def _quant_basis_keys(typ: TypologyEvidence) -> list[str]:
@@ -56,6 +63,8 @@ def _quant_basis_keys(typ: TypologyEvidence) -> list[str]:
     keys = [f"typology.{typ.code}.quantitative_basis.{f}" for f in fields if f in typ.quantitative_basis]
     if typ.code == "CROSS_BORDER_RISK":
         keys += [f"typology.{typ.code}.quantitative_basis.countries.{c}" for c in typ.quantitative_basis.get("countries", [])]
+    if typ.code == "RAPID_MOVEMENT":
+        keys.append(f"typology.{typ.code}.quantitative_basis.window_hours")
     return keys
 
 
