@@ -1,0 +1,23 @@
+# Synthetic data generator configuration reference (blueprint §20 tree:
+# data/generator/config.yaml). The actual generator implementation lives in
+# api/app/domain/ingestion/ (synthetic.py, typologies.py, background.py) so
+# it can be exercised from the CLI and pytest inside the api container.
+# This file documents the same knobs those modules currently hardcode as
+# constants — wiring the code to read this file is a reasonable follow-up
+# once a second dataset profile is actually needed.
+
+injection_rate: 0.12          # fraction of accounts touched by an injected typology
+circular_flow_group_size: 3   # accounts per round-tripping cycle
+
+typologies:
+  - STRUCTURING
+  - SMURFING
+  - RAPID_MOVEMENT
+  - CIRCULAR_FLOW
+  - HIGH_VELOCITY
+  - DORMANT_REACTIVATION
+
+defaults:
+  accounts: 500
+  days: 180
+  seed: 42

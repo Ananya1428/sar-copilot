@@ -1,0 +1,1327 @@
+{
+  "generated_at": "2026-09-06T07:09:31.305887+00:00",
+  "builder_version": "0.1.0",
+  "config": {
+    "accounts": 500,
+    "days": 180,
+    "seed": 7
+  },
+  "injection_rate_target": 0.12,
+  "accounts_touched": 80,
+  "accounts_clean": 420,
+  "typology_counts": {
+    "STRUCTURING": 10,
+    "SMURFING": 10,
+    "RAPID_MOVEMENT": 10,
+    "CIRCULAR_FLOW": 10,
+    "HIGH_VELOCITY": 10,
+    "DORMANT_REACTIVATION": 10
+  },
+  "injections": [
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-37782",
+      "customer_id": "4d12d8d8-36c0-486f-af8d-e7fd1e6efc47",
+      "transaction_refs": [
+        "TXN-4827308051",
+        "TXN-6955908531",
+        "TXN-4381827395",
+        "TXN-2064821874",
+        "TXN-6674676824"
+      ],
+      "window": {
+        "start": "2026-04-08T13:18:46.012273+00:00",
+        "end": "2026-04-15T13:18:46.012273+00:00"
+      },
+      "total": "44528.49"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-49724",
+      "customer_id": "667c2fb2-583d-4be7-b692-33a03a283945",
+      "transaction_refs": [
+        "TXN-4706808162",
+        "TXN-4862888569",
+        "TXN-6866232221",
+        "TXN-5049112384",
+        "TXN-4916202971",
+        "TXN-6612609389"
+      ],
+      "window": {
+        "start": "2026-04-09T04:39:54.892439+00:00",
+        "end": "2026-04-16T04:39:54.892439+00:00"
+      },
+      "total": "55003.33"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-49029",
+      "customer_id": "793f4e8a-b336-48df-b339-7b8ecd6a3716",
+      "transaction_refs": [
+        "TXN-8358364802",
+        "TXN-6752304891",
+        "TXN-2550062700",
+        "TXN-1109837219",
+        "TXN-7020876075",
+        "TXN-7771964129"
+      ],
+      "window": {
+        "start": "2026-06-05T14:02:33.388578+00:00",
+        "end": "2026-06-12T14:02:33.388578+00:00"
+      },
+      "total": "54420.52"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-86400",
+      "customer_id": "d5951881-d72f-429a-8b53-3c9c1aa93396",
+      "transaction_refs": [
+        "TXN-3227090872",
+        "TXN-6190127820",
+        "TXN-5444798289",
+        "TXN-8494717098",
+        "TXN-6235599537",
+        "TXN-2790205372"
+      ],
+      "window": {
+        "start": "2026-05-04T09:40:18.894428+00:00",
+        "end": "2026-05-11T09:40:18.894428+00:00"
+      },
+      "total": "54871.31"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-59371",
+      "customer_id": "07b9889c-e7a9-4dfe-be4b-1c4d8d65723f",
+      "transaction_refs": [
+        "TXN-3148807660",
+        "TXN-1704657708",
+        "TXN-2553542499",
+        "TXN-1916458305",
+        "TXN-2185463156",
+        "TXN-4323494818"
+      ],
+      "window": {
+        "start": "2026-05-05T21:56:32.102145+00:00",
+        "end": "2026-05-12T21:56:32.102145+00:00"
+      },
+      "total": "53788.28"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-22728",
+      "customer_id": "00c46ab3-b774-4349-9ccb-713d5db1a269",
+      "transaction_refs": [
+        "TXN-4530097104",
+        "TXN-4095776304",
+        "TXN-8895664020",
+        "TXN-8205373606",
+        "TXN-6738278462"
+      ],
+      "window": {
+        "start": "2026-07-27T03:54:21.956418+00:00",
+        "end": "2026-08-03T03:54:21.956418+00:00"
+      },
+      "total": "45754.79"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-78334",
+      "customer_id": "bd978b3a-b0ac-4739-8c2f-6eaa86fc9b0c",
+      "transaction_refs": [
+        "TXN-7167491709",
+        "TXN-2356307806",
+        "TXN-7837808094",
+        "TXN-1726666907",
+        "TXN-7121043939"
+      ],
+      "window": {
+        "start": "2026-07-20T22:00:46.471890+00:00",
+        "end": "2026-07-27T22:00:46.471890+00:00"
+      },
+      "total": "45007.72"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-94317",
+      "customer_id": "6929b068-5c08-4522-a81e-4551b3355475",
+      "transaction_refs": [
+        "TXN-7342814226",
+        "TXN-7956788030",
+        "TXN-7985921740",
+        "TXN-3908757556",
+        "TXN-3795571172",
+        "TXN-8759088123",
+        "TXN-9286657715"
+      ],
+      "window": {
+        "start": "2026-05-10T04:37:09.897816+00:00",
+        "end": "2026-05-17T04:37:09.897816+00:00"
+      },
+      "total": "62593.94"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-90598",
+      "customer_id": "56983e16-ea1c-4ac2-8ab6-f7934b95e37d",
+      "transaction_refs": [
+        "TXN-2119277466",
+        "TXN-5346493776",
+        "TXN-2620317393",
+        "TXN-1979197377",
+        "TXN-5181325671",
+        "TXN-8431802058",
+        "TXN-9490253527"
+      ],
+      "window": {
+        "start": "2026-06-28T20:59:12.550854+00:00",
+        "end": "2026-07-05T20:59:12.550854+00:00"
+      },
+      "total": "62000.94"
+    },
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-80301",
+      "customer_id": "5b751a3a-39a1-4ea6-98d6-9164aa85e628",
+      "transaction_refs": [
+        "TXN-3706267411",
+        "TXN-6145508142",
+        "TXN-6382938826",
+        "TXN-1752049209"
+      ],
+      "window": {
+        "start": "2026-03-16T21:19:54.157177+00:00",
+        "end": "2026-03-23T21:19:54.157177+00:00"
+      },
+      "total": "33864.74"
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-86440",
+      "customer_id": "a328352d-f1e0-4fda-b375-172b981827e2",
+      "transaction_refs": [
+        "TXN-4888880578",
+        "TXN-7234515852",
+        "TXN-8130471034",
+        "TXN-5906871794",
+        "TXN-5031708088",
+        "TXN-7742586880"
+      ],
+      "distinct_originators": 6,
+      "window": {
+        "start": "2026-04-09T03:52:22.545987+00:00",
+        "end": "2026-04-23T03:52:22.545987+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-85597",
+      "customer_id": "9a7bf25f-d20e-4fad-9536-30cda33929e1",
+      "transaction_refs": [
+        "TXN-2617480303",
+        "TXN-8249945191",
+        "TXN-2446623553",
+        "TXN-5246712850",
+        "TXN-5935275633",
+        "TXN-5008746265",
+        "TXN-6911797621",
+        "TXN-2102105381"
+      ],
+      "distinct_originators": 8,
+      "window": {
+        "start": "2026-07-09T05:01:55.561404+00:00",
+        "end": "2026-07-23T05:01:55.561404+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-44035",
+      "customer_id": "a1f1a3be-55d4-4c09-a029-9a5ade94f880",
+      "transaction_refs": [
+        "TXN-1921280934",
+        "TXN-7558516069",
+        "TXN-9004039302",
+        "TXN-5115871246",
+        "TXN-9819831807",
+        "TXN-8951381198",
+        "TXN-7205466459"
+      ],
+      "distinct_originators": 7,
+      "window": {
+        "start": "2026-07-09T12:46:15.764189+00:00",
+        "end": "2026-07-23T12:46:15.764189+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-92150",
+      "customer_id": "56708236-e231-4a55-8629-32653e9caebf",
+      "transaction_refs": [
+        "TXN-6220150751",
+        "TXN-8426601344",
+        "TXN-5109326885",
+        "TXN-6412848443",
+        "TXN-4375245859"
+      ],
+      "distinct_originators": 5,
+      "window": {
+        "start": "2026-03-14T13:00:53.790184+00:00",
+        "end": "2026-03-28T13:00:53.790184+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-10172",
+      "customer_id": "27698d2d-2906-418b-aa56-b1e8d9dd98d8",
+      "transaction_refs": [
+        "TXN-4312134382",
+        "TXN-1911572732",
+        "TXN-3929148070",
+        "TXN-2111538818",
+        "TXN-7314793776"
+      ],
+      "distinct_originators": 5,
+      "window": {
+        "start": "2026-04-20T19:53:37.936796+00:00",
+        "end": "2026-05-04T19:53:37.936796+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-29961",
+      "customer_id": "1a24b28b-9431-48f4-aebe-b265071538b2",
+      "transaction_refs": [
+        "TXN-7826335794",
+        "TXN-5165225506",
+        "TXN-3351415712",
+        "TXN-2968389333",
+        "TXN-6851121583",
+        "TXN-2547672200",
+        "TXN-3519264909"
+      ],
+      "distinct_originators": 7,
+      "window": {
+        "start": "2026-05-31T03:54:30.720842+00:00",
+        "end": "2026-06-14T03:54:30.720842+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-63360",
+      "customer_id": "ff02569b-be55-41b4-9b1f-3f4a016853c8",
+      "transaction_refs": [
+        "TXN-3867234716",
+        "TXN-9457069724",
+        "TXN-7507624535",
+        "TXN-9646063980",
+        "TXN-1436609429",
+        "TXN-6944890681"
+      ],
+      "distinct_originators": 6,
+      "window": {
+        "start": "2026-05-19T02:24:03.495381+00:00",
+        "end": "2026-06-02T02:24:03.495381+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-57420",
+      "customer_id": "44d96407-b46e-4bea-a483-9e0a64afa6d8",
+      "transaction_refs": [
+        "TXN-5930286155",
+        "TXN-5268937212",
+        "TXN-5986993716",
+        "TXN-6884390935",
+        "TXN-1641521753"
+      ],
+      "distinct_originators": 5,
+      "window": {
+        "start": "2026-08-22T01:53:47.137429+00:00",
+        "end": "2026-09-05T01:53:47.137429+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-13718",
+      "customer_id": "a9f04b9e-46c1-44c9-aaa3-8df28ce84050",
+      "transaction_refs": [
+        "TXN-7702142648",
+        "TXN-4124379499",
+        "TXN-8833907552",
+        "TXN-7824598836",
+        "TXN-4585107842"
+      ],
+      "distinct_originators": 5,
+      "window": {
+        "start": "2026-06-15T23:52:15.665414+00:00",
+        "end": "2026-06-29T23:52:15.665414+00:00"
+      }
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-41804",
+      "customer_id": "6d20bf0c-a312-4555-8fbb-4086a4fcbc7e",
+      "transaction_refs": [
+        "TXN-1851326507",
+        "TXN-5633580387",
+        "TXN-1664422858",
+        "TXN-5490027528",
+        "TXN-4393807641",
+        "TXN-4078517833",
+        "TXN-7155981186",
+        "TXN-9605264657",
+        "TXN-2752140648"
+      ],
+      "distinct_originators": 9,
+      "window": {
+        "start": "2026-05-24T10:25:00.752394+00:00",
+        "end": "2026-06-07T10:25:00.752394+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-13024",
+      "customer_id": "4a72c9ed-637d-45f4-821f-0c7bcb520b64",
+      "transaction_refs": [
+        "TXN-8175449603",
+        "TXN-8922390769",
+        "TXN-1364354167"
+      ],
+      "credit_amount": "31507.42",
+      "moved_within_48h_pct": 75.6,
+      "window": {
+        "start": "2026-06-13T13:21:15+00:00",
+        "end": "2026-06-15T13:21:15+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-42455",
+      "customer_id": "fb5513ad-af53-4859-a17a-fbb618380498",
+      "transaction_refs": [
+        "TXN-5723948048",
+        "TXN-9267467338",
+        "TXN-7218597693"
+      ],
+      "credit_amount": "27676.15",
+      "moved_within_48h_pct": 82.6,
+      "window": {
+        "start": "2026-03-20T12:58:40+00:00",
+        "end": "2026-03-22T12:58:40+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-84511",
+      "customer_id": "8db7a629-f4a3-4fe0-805e-280fcd278dd0",
+      "transaction_refs": [
+        "TXN-5583212459",
+        "TXN-3995599431",
+        "TXN-4439731726",
+        "TXN-2383150728"
+      ],
+      "credit_amount": "43572.62",
+      "moved_within_48h_pct": 80.9,
+      "window": {
+        "start": "2026-03-21T15:08:09+00:00",
+        "end": "2026-03-23T15:08:09+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-50799",
+      "customer_id": "88168ecf-1c8e-469b-b9da-cfadab7999d3",
+      "transaction_refs": [
+        "TXN-6870018957",
+        "TXN-7175221418",
+        "TXN-1567037369"
+      ],
+      "credit_amount": "43320.01",
+      "moved_within_48h_pct": 87.8,
+      "window": {
+        "start": "2026-03-19T12:22:10+00:00",
+        "end": "2026-03-21T12:22:10+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-11849",
+      "customer_id": "093fdfa4-0237-4ee8-a020-46a7eb9d636c",
+      "transaction_refs": [
+        "TXN-9040414856",
+        "TXN-9984891661"
+      ],
+      "credit_amount": "37226.62",
+      "moved_within_48h_pct": 87.9,
+      "window": {
+        "start": "2026-06-15T11:40:58+00:00",
+        "end": "2026-06-17T11:40:58+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-12957",
+      "customer_id": "ace1c665-7778-4e0a-924d-ad685ea1df3d",
+      "transaction_refs": [
+        "TXN-7829696375",
+        "TXN-7821381363",
+        "TXN-6139093291",
+        "TXN-2449075215"
+      ],
+      "credit_amount": "26120.18",
+      "moved_within_48h_pct": 91.2,
+      "window": {
+        "start": "2026-04-18T13:05:55+00:00",
+        "end": "2026-04-20T13:05:55+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-86168",
+      "customer_id": "c3c7f033-7d35-49fc-80b5-f15481ecd55d",
+      "transaction_refs": [
+        "TXN-3159888740",
+        "TXN-3567505216",
+        "TXN-6554063781"
+      ],
+      "credit_amount": "40419.87",
+      "moved_within_48h_pct": 82.6,
+      "window": {
+        "start": "2026-05-15T17:14:39+00:00",
+        "end": "2026-05-17T17:14:39+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-53986",
+      "customer_id": "ad1e97f1-9f44-4aea-89c3-a325a3607f7a",
+      "transaction_refs": [
+        "TXN-7517155092",
+        "TXN-7631607758",
+        "TXN-6397905290",
+        "TXN-3927667190"
+      ],
+      "credit_amount": "45135.21",
+      "moved_within_48h_pct": 76.2,
+      "window": {
+        "start": "2026-03-31T15:49:23+00:00",
+        "end": "2026-04-02T15:49:23+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-93789",
+      "customer_id": "e035494e-d4ac-4673-a285-08242bc4974f",
+      "transaction_refs": [
+        "TXN-3809567699",
+        "TXN-8199099635",
+        "TXN-3978559815"
+      ],
+      "credit_amount": "54485.77",
+      "moved_within_48h_pct": 90.7,
+      "window": {
+        "start": "2026-07-18T12:29:23+00:00",
+        "end": "2026-07-20T12:29:23+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-72642",
+      "customer_id": "4eca98b0-eb61-41c1-9fff-2c7aab523b59",
+      "transaction_refs": [
+        "TXN-4415221387",
+        "TXN-4165858154",
+        "TXN-2585972947"
+      ],
+      "credit_amount": "22434.83",
+      "moved_within_48h_pct": 78.5,
+      "window": {
+        "start": "2026-04-27T13:26:02+00:00",
+        "end": "2026-04-29T13:26:02+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-38533",
+        "ACC-92871",
+        "ACC-27455"
+      ],
+      "customer_ids": [
+        "91c7ebea-0bae-4548-aee9-6d92924253de",
+        "3e1032ac-8382-4e93-b2b6-0cdee61fc65f",
+        "39e26231-134c-4365-8b11-8d80b8e6e43b"
+      ],
+      "transaction_refs": [
+        "TXN-8940709240",
+        "TXN-7181536656",
+        "TXN-2348819655",
+        "TXN-5972704841",
+        "TXN-4662455447",
+        "TXN-4657902133"
+      ],
+      "retention": 0.783,
+      "hops": 3,
+      "window": {
+        "start": "2026-04-26T06:05:07.674060+00:00",
+        "end": "2026-04-29T22:09:23.358024+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-63210",
+        "ACC-69343",
+        "ACC-44466"
+      ],
+      "customer_ids": [
+        "c39a99cf-1901-4de0-ad45-80498540d4c7",
+        "4cbfd94f-9cfd-4ca4-943c-8593d6439096",
+        "3c62ced8-f262-4dca-aa08-3a1feb275979"
+      ],
+      "transaction_refs": [
+        "TXN-6461537390",
+        "TXN-9540002739",
+        "TXN-6978398766",
+        "TXN-4359012382",
+        "TXN-6673932745",
+        "TXN-9740539819"
+      ],
+      "retention": 0.876,
+      "hops": 3,
+      "window": {
+        "start": "2026-05-23T15:14:18.350337+00:00",
+        "end": "2026-05-25T08:13:41.849518+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-17565",
+        "ACC-65121",
+        "ACC-51203"
+      ],
+      "customer_ids": [
+        "56415f24-5844-4418-9b5c-c227d9261e30",
+        "c04aead2-5afa-4bee-88e2-19ee5bba2b32",
+        "44a9575e-002f-4ce3-9cff-c2e462fc502d"
+      ],
+      "transaction_refs": [
+        "TXN-2261834225",
+        "TXN-4905287414",
+        "TXN-2382986622",
+        "TXN-3585377699",
+        "TXN-1525453452",
+        "TXN-2559980977"
+      ],
+      "retention": 0.787,
+      "hops": 3,
+      "window": {
+        "start": "2026-04-15T06:58:52.964042+00:00",
+        "end": "2026-04-17T01:08:08.811152+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-12023",
+        "ACC-31253",
+        "ACC-34832"
+      ],
+      "customer_ids": [
+        "8e99e7c8-458f-454d-a65c-c53489f2d5f2",
+        "42b53368-39cc-4668-abb7-dbd107058e89",
+        "64b8acad-75eb-457a-93b0-e168659142a9"
+      ],
+      "transaction_refs": [
+        "TXN-2814110851",
+        "TXN-6328179117",
+        "TXN-6599633651",
+        "TXN-8361658671",
+        "TXN-1058481387",
+        "TXN-2984040896"
+      ],
+      "retention": 0.819,
+      "hops": 3,
+      "window": {
+        "start": "2026-03-30T11:35:07.319017+00:00",
+        "end": "2026-04-02T01:41:12.827026+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-27699",
+        "ACC-63916",
+        "ACC-82429"
+      ],
+      "customer_ids": [
+        "00519d89-109d-4c43-a57d-8dde211698bd",
+        "4c8b5805-8bcd-46ea-ad92-d90608070d7c",
+        "e5b5c7e5-c22c-4069-abd9-2f36186ce78d"
+      ],
+      "transaction_refs": [
+        "TXN-5106734341",
+        "TXN-8507368457",
+        "TXN-4770868288",
+        "TXN-4741710690",
+        "TXN-1289812539",
+        "TXN-6084475089"
+      ],
+      "retention": 0.868,
+      "hops": 3,
+      "window": {
+        "start": "2026-04-09T18:44:53.360832+00:00",
+        "end": "2026-04-13T03:25:39.336273+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-32242",
+        "ACC-13299",
+        "ACC-57746"
+      ],
+      "customer_ids": [
+        "1539f890-2ec2-4f3b-b132-8ee6379e14bb",
+        "7f133a06-77f2-4438-be21-02afc1f216a9",
+        "4885f287-1963-47aa-a1fd-1cdab15af93c"
+      ],
+      "transaction_refs": [
+        "TXN-1726822135",
+        "TXN-3120485761",
+        "TXN-1899868512",
+        "TXN-7714548706",
+        "TXN-9952664166",
+        "TXN-5786268037"
+      ],
+      "retention": 0.779,
+      "hops": 3,
+      "window": {
+        "start": "2026-05-20T16:44:33.186111+00:00",
+        "end": "2026-05-24T05:51:33.210916+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-18412",
+        "ACC-18094",
+        "ACC-29114"
+      ],
+      "customer_ids": [
+        "8bccbc27-46ae-4103-9446-3b489c65ff0e",
+        "41428c3d-bf42-4d69-b86a-7e24f0c55eb5",
+        "52728997-b319-4e93-9947-0bdc6e713fd2"
+      ],
+      "transaction_refs": [
+        "TXN-5784321044",
+        "TXN-9152868535",
+        "TXN-1015744187",
+        "TXN-7577870997",
+        "TXN-2109683884",
+        "TXN-8320753681"
+      ],
+      "retention": 0.773,
+      "hops": 3,
+      "window": {
+        "start": "2026-06-10T20:46:56.197184+00:00",
+        "end": "2026-06-12T23:41:47.619035+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-32367",
+        "ACC-15712",
+        "ACC-40675"
+      ],
+      "customer_ids": [
+        "6b26abd4-a33c-49e9-ac7b-aee86b6c9e72",
+        "56a91753-890a-4b06-8dc5-79442198a348",
+        "8c18d5b0-0553-4e98-8d5d-b2f342ca6ca6"
+      ],
+      "transaction_refs": [
+        "TXN-9420699073",
+        "TXN-3902102453",
+        "TXN-1742993197",
+        "TXN-3980037778",
+        "TXN-6643531998",
+        "TXN-3648226473"
+      ],
+      "retention": 0.788,
+      "hops": 3,
+      "window": {
+        "start": "2026-08-16T19:55:19.011542+00:00",
+        "end": "2026-08-19T10:22:10.465319+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-35786",
+        "ACC-36735",
+        "ACC-94118"
+      ],
+      "customer_ids": [
+        "866b4d0e-36f6-49e6-8715-91afc846bf2e",
+        "8e315483-4e96-48e9-ae63-5436f3210827",
+        "6273a56f-16cb-41aa-bbf9-f9e188006136"
+      ],
+      "transaction_refs": [
+        "TXN-8860436908",
+        "TXN-6858401553",
+        "TXN-5165239422",
+        "TXN-1457392660",
+        "TXN-9732500531",
+        "TXN-4127128071"
+      ],
+      "retention": 0.815,
+      "hops": 3,
+      "window": {
+        "start": "2026-05-03T00:10:51.451982+00:00",
+        "end": "2026-05-07T08:20:47.205320+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-81064",
+        "ACC-75046",
+        "ACC-17529"
+      ],
+      "customer_ids": [
+        "d10a2f63-b6fe-4105-b21f-672f0e5967d8",
+        "d21016ce-e063-4fc3-b4d5-ea60a59d8696",
+        "1a1482d7-f962-48b1-b967-e3459d07867d"
+      ],
+      "transaction_refs": [
+        "TXN-6281818149",
+        "TXN-1783714276",
+        "TXN-8019309190",
+        "TXN-5860597547",
+        "TXN-4906684857",
+        "TXN-4090340251"
+      ],
+      "retention": 0.782,
+      "hops": 3,
+      "window": {
+        "start": "2026-08-04T11:14:57.019059+00:00",
+        "end": "2026-08-06T07:23:49.888074+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-67592",
+      "customer_id": "9254a785-df50-4810-bde5-fa008d13a88a",
+      "transaction_refs": [
+        "TXN-4979274671",
+        "TXN-7666491557",
+        "TXN-7287824374",
+        "TXN-6502562367",
+        "TXN-8280105364",
+        "TXN-6876417527",
+        "TXN-2723164201",
+        "TXN-5956772973",
+        "TXN-6363278493",
+        "TXN-5815479547",
+        "TXN-8725235663",
+        "TXN-4705566144",
+        "TXN-2876001218",
+        "TXN-2364756184",
+        "TXN-1428462274",
+        "TXN-6124434180",
+        "TXN-4742436753",
+        "TXN-3460312509",
+        "TXN-2318593950",
+        "TXN-1216857816",
+        "TXN-6424074129",
+        "TXN-2595778630",
+        "TXN-4708093942"
+      ],
+      "txn_count_24h": 23,
+      "window": {
+        "start": "2026-07-13T19:39:24.667498+00:00",
+        "end": "2026-07-14T19:39:24.667498+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-36796",
+      "customer_id": "0f797d3d-16bb-4984-95ad-1f2e01fa5055",
+      "transaction_refs": [
+        "TXN-6192669922",
+        "TXN-6256069607",
+        "TXN-8548895580",
+        "TXN-3838608210",
+        "TXN-9932896411",
+        "TXN-6122315800",
+        "TXN-9600945818",
+        "TXN-2446210478",
+        "TXN-8690838714",
+        "TXN-9983780581",
+        "TXN-9231760779",
+        "TXN-7287726670",
+        "TXN-4975206554",
+        "TXN-9771155294",
+        "TXN-7186818107",
+        "TXN-2826986598",
+        "TXN-3408837709",
+        "TXN-4276379761"
+      ],
+      "txn_count_24h": 18,
+      "window": {
+        "start": "2026-03-30T18:48:18.059030+00:00",
+        "end": "2026-03-31T18:48:18.059030+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-40176",
+      "customer_id": "21181dd0-520c-46db-9030-a6b5a3233c8e",
+      "transaction_refs": [
+        "TXN-2563799737",
+        "TXN-3163668118",
+        "TXN-5883160705",
+        "TXN-5141755259",
+        "TXN-3566849846",
+        "TXN-7429087983",
+        "TXN-7810435979",
+        "TXN-7424218137",
+        "TXN-2605750449",
+        "TXN-9547920144",
+        "TXN-3781749038",
+        "TXN-6048539202",
+        "TXN-2986652953",
+        "TXN-8247015126",
+        "TXN-8237690193",
+        "TXN-2699605073",
+        "TXN-1350445370",
+        "TXN-8676990975"
+      ],
+      "txn_count_24h": 18,
+      "window": {
+        "start": "2026-03-28T14:47:17.214821+00:00",
+        "end": "2026-03-29T14:47:17.214821+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-74680",
+      "customer_id": "a37fb974-d9fc-4cfc-93c4-925856aaba4a",
+      "transaction_refs": [
+        "TXN-1731432899",
+        "TXN-1664768244",
+        "TXN-2299754067",
+        "TXN-6239536886",
+        "TXN-5060482853",
+        "TXN-8343428296",
+        "TXN-2231524430",
+        "TXN-3537805283",
+        "TXN-8786158953",
+        "TXN-2714403664",
+        "TXN-4959562330",
+        "TXN-1438589136",
+        "TXN-9320729331",
+        "TXN-3661401768",
+        "TXN-1583006134",
+        "TXN-9789775463",
+        "TXN-2915652149",
+        "TXN-5665081202",
+        "TXN-6316318327",
+        "TXN-3170518738",
+        "TXN-6246364516",
+        "TXN-2355543544",
+        "TXN-7558386511",
+        "TXN-8436731699"
+      ],
+      "txn_count_24h": 24,
+      "window": {
+        "start": "2026-06-03T09:04:21.335493+00:00",
+        "end": "2026-06-04T09:04:21.335493+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-94092",
+      "customer_id": "505e68c3-818a-4f8a-8591-457f8024c3f6",
+      "transaction_refs": [
+        "TXN-7855747888",
+        "TXN-7307298347",
+        "TXN-3834086791",
+        "TXN-9783759809",
+        "TXN-4011615638",
+        "TXN-3519895527",
+        "TXN-9101624470",
+        "TXN-2592099277",
+        "TXN-4611220674",
+        "TXN-2415248112",
+        "TXN-8737289886",
+        "TXN-2319555642",
+        "TXN-9501557628",
+        "TXN-7219165976",
+        "TXN-1652885547"
+      ],
+      "txn_count_24h": 15,
+      "window": {
+        "start": "2026-07-31T13:28:59.484460+00:00",
+        "end": "2026-08-01T13:28:59.484460+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-33317",
+      "customer_id": "c41421d4-00e8-4242-91d3-5b3ac9946897",
+      "transaction_refs": [
+        "TXN-6610669987",
+        "TXN-2901517867",
+        "TXN-1890652088",
+        "TXN-1539883476",
+        "TXN-1501269098",
+        "TXN-8663873839",
+        "TXN-5582764165",
+        "TXN-7170773476",
+        "TXN-4958298963",
+        "TXN-6396209286",
+        "TXN-5321287602",
+        "TXN-3754400424",
+        "TXN-3834993021",
+        "TXN-7305609052",
+        "TXN-5363075901"
+      ],
+      "txn_count_24h": 15,
+      "window": {
+        "start": "2026-07-12T15:30:01.672533+00:00",
+        "end": "2026-07-13T15:30:01.672533+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-81831",
+      "customer_id": "758cb8e3-61b2-4582-b10d-c7e823aea381",
+      "transaction_refs": [
+        "TXN-4753757705",
+        "TXN-1398312345",
+        "TXN-6165941115",
+        "TXN-6865079603",
+        "TXN-9315624288",
+        "TXN-7123894653",
+        "TXN-3194997606",
+        "TXN-1925609582",
+        "TXN-9772709197",
+        "TXN-8504413165",
+        "TXN-1963715031",
+        "TXN-6494029425",
+        "TXN-1779276053",
+        "TXN-3412904744",
+        "TXN-6731385917"
+      ],
+      "txn_count_24h": 15,
+      "window": {
+        "start": "2026-07-15T06:25:14.934883+00:00",
+        "end": "2026-07-16T06:25:14.934883+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-67753",
+      "customer_id": "a0b3abcc-3337-464b-8715-1c343beced24",
+      "transaction_refs": [
+        "TXN-6589970048",
+        "TXN-8561782824",
+        "TXN-9632718364",
+        "TXN-3138358114",
+        "TXN-5220443485",
+        "TXN-4339178071",
+        "TXN-4633795539",
+        "TXN-9537922573",
+        "TXN-1630294278",
+        "TXN-5137939673",
+        "TXN-9126894325",
+        "TXN-4129846791",
+        "TXN-2469767042",
+        "TXN-9391928373",
+        "TXN-6066754922",
+        "TXN-6605047261",
+        "TXN-6074892193",
+        "TXN-1423611873",
+        "TXN-2023053630",
+        "TXN-1248349309",
+        "TXN-9783785032",
+        "TXN-3084795293",
+        "TXN-8992947502",
+        "TXN-7350745377",
+        "TXN-9445327146"
+      ],
+      "txn_count_24h": 25,
+      "window": {
+        "start": "2026-04-20T14:03:35.712862+00:00",
+        "end": "2026-04-21T14:03:35.712862+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-58708",
+      "customer_id": "419a8b93-68c2-4cac-badb-2602aaf2059a",
+      "transaction_refs": [
+        "TXN-4218468439",
+        "TXN-8053686374",
+        "TXN-7980865658",
+        "TXN-1108306546",
+        "TXN-3874575251",
+        "TXN-9657768114",
+        "TXN-4934466407",
+        "TXN-5882015069",
+        "TXN-1629197755",
+        "TXN-7385422362",
+        "TXN-3995281886",
+        "TXN-5879220880",
+        "TXN-9294227866",
+        "TXN-3223781752",
+        "TXN-1981460432",
+        "TXN-4134677099",
+        "TXN-7851906809",
+        "TXN-8750504033",
+        "TXN-1457963107",
+        "TXN-8112462078",
+        "TXN-5848937583"
+      ],
+      "txn_count_24h": 21,
+      "window": {
+        "start": "2026-08-16T18:56:43.394593+00:00",
+        "end": "2026-08-17T18:56:43.394593+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-36125",
+      "customer_id": "26b4ba30-fd1d-4aa0-ac39-76baf6d015b3",
+      "transaction_refs": [
+        "TXN-5928083422",
+        "TXN-5367680315",
+        "TXN-3541811556",
+        "TXN-4752963706",
+        "TXN-4907552939",
+        "TXN-7312123762",
+        "TXN-8668560956",
+        "TXN-9884572172",
+        "TXN-3527900506",
+        "TXN-7182674832",
+        "TXN-4629569514",
+        "TXN-1081288523",
+        "TXN-4620687480",
+        "TXN-9004411076",
+        "TXN-8231996831",
+        "TXN-8306583044",
+        "TXN-2426983366",
+        "TXN-9507293266",
+        "TXN-8063611879",
+        "TXN-1580478905",
+        "TXN-1590055642",
+        "TXN-8505732056",
+        "TXN-7439735306",
+        "TXN-9823666732",
+        "TXN-1098134869",
+        "TXN-1827641695",
+        "TXN-9512221687",
+        "TXN-8223224788"
+      ],
+      "txn_count_24h": 28,
+      "window": {
+        "start": "2026-05-25T12:38:56.265751+00:00",
+        "end": "2026-05-26T12:38:56.265751+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-52312",
+      "customer_id": "7896aaef-aae1-4aa0-bfd8-842f368a2f41",
+      "transaction_refs": [
+        "TXN-7925173206",
+        "TXN-9292552134",
+        "TXN-4846643919",
+        "TXN-7787008386",
+        "TXN-8087727076",
+        "TXN-5848263631",
+        "TXN-8125354851"
+      ],
+      "dormant_days_before_burst": 175,
+      "window": {
+        "start": "2026-09-01T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-57200",
+      "customer_id": "3ad63a2a-cd0a-4a0d-8c39-5016ac52c2bf",
+      "transaction_refs": [
+        "TXN-5840003190",
+        "TXN-4387198034",
+        "TXN-1418468616",
+        "TXN-3311606771",
+        "TXN-2362867274",
+        "TXN-6787170760"
+      ],
+      "dormant_days_before_burst": 175,
+      "window": {
+        "start": "2026-09-01T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-89764",
+      "customer_id": "1919287f-02ca-4519-bc00-6594a44d2991",
+      "transaction_refs": [
+        "TXN-3204376840",
+        "TXN-7832210315",
+        "TXN-3699009934",
+        "TXN-6070603592",
+        "TXN-8183391053",
+        "TXN-1222065989",
+        "TXN-4308645244",
+        "TXN-8769113136"
+      ],
+      "dormant_days_before_burst": 176,
+      "window": {
+        "start": "2026-09-02T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-34451",
+      "customer_id": "329b976e-d32c-4201-9b6c-1d705f24b087",
+      "transaction_refs": [
+        "TXN-6857693131",
+        "TXN-7567597178",
+        "TXN-5333445470",
+        "TXN-9708073073",
+        "TXN-9969837106",
+        "TXN-9296885331"
+      ],
+      "dormant_days_before_burst": 177,
+      "window": {
+        "start": "2026-09-03T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-29215",
+      "customer_id": "032492a5-2227-49c2-8fe3-6c4358fe1763",
+      "transaction_refs": [
+        "TXN-8842543126",
+        "TXN-7623947137",
+        "TXN-1951897938",
+        "TXN-1242650831",
+        "TXN-6024600421",
+        "TXN-5713872744",
+        "TXN-4727214298"
+      ],
+      "dormant_days_before_burst": 173,
+      "window": {
+        "start": "2026-08-30T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-69821",
+      "customer_id": "af2c6e9d-6d0e-4c13-85ae-0efaf0558215",
+      "transaction_refs": [
+        "TXN-9616803999",
+        "TXN-8376940850",
+        "TXN-3155534449",
+        "TXN-9405025698",
+        "TXN-9902983948",
+        "TXN-4253067238",
+        "TXN-5364918198"
+      ],
+      "dormant_days_before_burst": 176,
+      "window": {
+        "start": "2026-09-02T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-14410",
+      "customer_id": "7ce60ea6-1b52-480a-baef-b20a2218261a",
+      "transaction_refs": [
+        "TXN-2452973549",
+        "TXN-5114862493",
+        "TXN-4412759852",
+        "TXN-8431344436",
+        "TXN-5206699271",
+        "TXN-8846592767",
+        "TXN-1826953039",
+        "TXN-6392166661",
+        "TXN-9707170880"
+      ],
+      "dormant_days_before_burst": 177,
+      "window": {
+        "start": "2026-09-03T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-15235",
+      "customer_id": "15e8e1f5-d4bf-412b-b962-be8d25f873b0",
+      "transaction_refs": [
+        "TXN-3525298097",
+        "TXN-1462396505",
+        "TXN-7162716745",
+        "TXN-4007711578",
+        "TXN-5710423187",
+        "TXN-1551074391",
+        "TXN-9009711740"
+      ],
+      "dormant_days_before_burst": 175,
+      "window": {
+        "start": "2026-09-01T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-27283",
+      "customer_id": "2ec565b5-8f16-4587-a4da-83039e07ce21",
+      "transaction_refs": [
+        "TXN-6706106275",
+        "TXN-8981732241",
+        "TXN-6273285429",
+        "TXN-5801074855",
+        "TXN-2731707247",
+        "TXN-1542676105"
+      ],
+      "dormant_days_before_burst": 174,
+      "window": {
+        "start": "2026-08-31T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-56627",
+      "customer_id": "e1c9916a-bf76-4d13-8420-dba822496b33",
+      "transaction_refs": [
+        "TXN-4876840736",
+        "TXN-8155530607",
+        "TXN-7177881654",
+        "TXN-3524893152",
+        "TXN-7747970114",
+        "TXN-6529477300",
+        "TXN-9608142660",
+        "TXN-5813927045"
+      ],
+      "dormant_days_before_burst": 175,
+      "window": {
+        "start": "2026-09-01T07:09:20+00:00",
+        "end": "2026-09-06T07:09:20+00:00"
+      }
+    }
+  ]
+}

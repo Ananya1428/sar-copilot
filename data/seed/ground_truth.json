@@ -1,0 +1,161 @@
+{
+  "generated_at": "2026-09-06T07:16:05.890840+00:00",
+  "builder_version": "0.1.0",
+  "config": {
+    "accounts": 50,
+    "days": 60,
+    "seed": 42
+  },
+  "injection_rate_target": 0.12,
+  "accounts_touched": 8,
+  "accounts_clean": 42,
+  "typology_counts": {
+    "STRUCTURING": 1,
+    "SMURFING": 1,
+    "RAPID_MOVEMENT": 1,
+    "CIRCULAR_FLOW": 1,
+    "HIGH_VELOCITY": 1,
+    "DORMANT_REACTIVATION": 1
+  },
+  "injections": [
+    {
+      "typology": "STRUCTURING",
+      "account_ref": "ACC-34957",
+      "customer_id": "d687e17e-7b30-467b-ab73-b880092c2fd5",
+      "transaction_refs": [
+        "TXN-6302109556",
+        "TXN-6288227800",
+        "TXN-7296096954",
+        "TXN-3987248494",
+        "TXN-9344011888",
+        "TXN-4856070374",
+        "TXN-1116402431"
+      ],
+      "window": {
+        "start": "2026-08-17T21:22:59.023134+00:00",
+        "end": "2026-08-24T21:22:59.023134+00:00"
+      },
+      "total": "63116.04"
+    },
+    {
+      "typology": "SMURFING",
+      "account_ref": "ACC-97900",
+      "customer_id": "33952881-cae9-4ba5-a1a8-0def6b9f7c96",
+      "transaction_refs": [
+        "TXN-6923206003",
+        "TXN-7105574449",
+        "TXN-2503068227",
+        "TXN-4239406957",
+        "TXN-3668616333",
+        "TXN-6231117883"
+      ],
+      "distinct_originators": 6,
+      "window": {
+        "start": "2026-08-06T20:51:49.201048+00:00",
+        "end": "2026-08-20T20:51:49.201048+00:00"
+      }
+    },
+    {
+      "typology": "RAPID_MOVEMENT",
+      "account_ref": "ACC-74032",
+      "customer_id": "c509b123-b836-4764-b04d-b6576545155b",
+      "transaction_refs": [
+        "TXN-4085320828",
+        "TXN-9410288290"
+      ],
+      "credit_amount": "50675.92",
+      "moved_within_48h_pct": 89.4,
+      "window": {
+        "start": "2026-08-17T10:38:38+00:00",
+        "end": "2026-08-19T10:38:38+00:00"
+      }
+    },
+    {
+      "typology": "CIRCULAR_FLOW",
+      "account_refs": [
+        "ACC-19099",
+        "ACC-10942",
+        "ACC-85880"
+      ],
+      "customer_ids": [
+        "57fed707-76fb-4545-ba70-cc89659347f1",
+        "25e4d078-6aca-449f-bfae-694dae1366d6",
+        "0a617cff-5b65-4c21-a257-a531006d4b37"
+      ],
+      "transaction_refs": [
+        "TXN-2043030161",
+        "TXN-4459716271",
+        "TXN-5471357886",
+        "TXN-8136179811",
+        "TXN-8076144396",
+        "TXN-3105400301"
+      ],
+      "retention": 0.797,
+      "hops": 3,
+      "window": {
+        "start": "2026-07-29T17:19:55.962340+00:00",
+        "end": "2026-07-31T16:54:23.762982+00:00"
+      }
+    },
+    {
+      "typology": "HIGH_VELOCITY",
+      "account_ref": "ACC-89516",
+      "customer_id": "a4a45825-4d7e-4a9b-9576-79139bf060a2",
+      "transaction_refs": [
+        "TXN-7291584955",
+        "TXN-5667181604",
+        "TXN-2444812497",
+        "TXN-6404582459",
+        "TXN-1820581106",
+        "TXN-7403028869",
+        "TXN-3971203213",
+        "TXN-6715705115",
+        "TXN-6122110529",
+        "TXN-7374584386",
+        "TXN-4576111591",
+        "TXN-5838636972",
+        "TXN-8528185058",
+        "TXN-7351029162",
+        "TXN-5575615203",
+        "TXN-2304963614",
+        "TXN-6928678489",
+        "TXN-9848621776",
+        "TXN-1348697524",
+        "TXN-7049536909",
+        "TXN-8986950095",
+        "TXN-2825957977",
+        "TXN-1306702926",
+        "TXN-5829062179",
+        "TXN-2880160025",
+        "TXN-1111088881",
+        "TXN-3474961963",
+        "TXN-7808938880",
+        "TXN-6789448659"
+      ],
+      "txn_count_24h": 29,
+      "window": {
+        "start": "2026-07-29T16:07:34.745032+00:00",
+        "end": "2026-07-30T16:07:34.745032+00:00"
+      }
+    },
+    {
+      "typology": "DORMANT_REACTIVATION",
+      "account_ref": "ACC-36100",
+      "customer_id": "12ac6fc7-9d3c-4b5b-881c-d0dc8bbd85ec",
+      "transaction_refs": [
+        "TXN-8274273035",
+        "TXN-5673181221",
+        "TXN-7625389037",
+        "TXN-7981077394",
+        "TXN-8293928340",
+        "TXN-9648665968",
+        "TXN-5067594934"
+      ],
+      "dormant_days_before_burst": 55,
+      "window": {
+        "start": "2026-09-01T07:16:05+00:00",
+        "end": "2026-09-06T07:16:05+00:00"
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# --- Node / web ---
+node_modules/
+web/dist/
+web/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Docker ---
+*.pid
+
+# --- Env / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Data ---
+data/seed/*.db
+data/generator/__pycache__/
+eval/results/*.json
+!eval/results/.gitkeep
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Local agent/session state (not project content) ---
+.claude/
+
+# --- Alembic (keep versions, ignore local sqlite fallback) ---
+api/*.db

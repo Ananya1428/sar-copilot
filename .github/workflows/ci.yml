@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sarcopilot
+          POSTGRES_USER: sar
+          POSTGRES_PASSWORD: sarpass
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sar -d sarcopilot"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+
+    env:
+      DATABASE_URL: postgresql+psycopg://sar:sarpass@localhost:5432/sarcopilot
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: api
+        run: pip install -r requirements.txt
+
+      - name: Run migrations
+        working-directory: api
+        run: alembic upgrade head
+
+      - name: Run tests
+        working-directory: api
+        run: pytest -v

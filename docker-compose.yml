@@ -1,0 +1,124 @@
+name: sar-copilot
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-sarcopilot}
+      POSTGRES_USER: ${DB_USER:-sar}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sarpass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sar} -d ${DB_NAME:-sarcopilot}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [sarnet]
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+    networks: [sarnet]
+
+  # TODO(part 2+): local LLM runtime for narrative generation.
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   volumes:
+  #     - ollamadata:/root/.ollama
+  #     - ./scripts/pull-model.sh:/pull-model.sh:ro
+  #   entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 8 && /pull-model.sh && wait"]
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "ollama list | grep -q llama3.1 || exit 1"]
+  #     interval: 15s
+  #     timeout: 10s
+  #     retries: 30
+  #     start_period: 300s
+  #   networks: [sarnet]
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://${DB_USER:-sar}:${DB_PASSWORD:-sarpass}@postgres:5432/${DB_NAME:-sarcopilot}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      LLM_MODEL: ${LLM_MODEL:-llama3.1:8b-instruct-q4_K_M}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      PROMPT_VERSION: ${PROMPT_VERSION:-v1.0.0}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+      # ollama: { condition: service_started }   # TODO(part 2+)
+    command: >
+      sh -c "alembic upgrade head &&
+             python -m app.cli seed --if-empty &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    volumes:
+      - ./data:/srv/data
+      - ./eval:/srv/eval
+    networks: [sarnet]
+
+  # TODO(part 3+): async narrative generation needs a worker.
+  # worker:
+  #   build: { context: ./api }
+  #   environment:
+  #     DATABASE_URL: postgresql+psycopg://${DB_USER:-sar}:${DB_PASSWORD:-sarpass}@postgres:5432/${DB_NAME:-sarcopilot}
+  #     REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+  #     OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+  #     LLM_MODEL: ${LLM_MODEL:-llama3.1:8b-instruct-q4_K_M}
+  #   depends_on:
+  #     api:    { condition: service_started }
+  #     ollama: { condition: service_started }
+  #   command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
+  #   networks: [sarnet]
+
+  # TODO(part 3+): scheduled jobs (e.g. periodic detection runs).
+  # beat:
+  #   build: { context: ./api }
+  #   environment:
+  #     DATABASE_URL: postgresql+psycopg://${DB_USER:-sar}:${DB_PASSWORD:-sarpass}@postgres:5432/${DB_NAME:-sarcopilot}
+  #     REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+  #   depends_on:
+  #     redis: { condition: service_healthy }
+  #   command: celery -A app.workers.celery_app beat --loglevel=info
+  #   networks: [sarnet]
+
+  # TODO(part 6): frontend build, served by nginx.
+  # web:
+  #   build:
+  #     context: ./web
+  #     args:
+  #       VITE_API_BASE_URL: /api/v1
+  #   networks: [sarnet]
+
+  # TODO(part 6): reverse proxy in front of api + web.
+  # nginx:
+  #   image: nginx:alpine
+  #   ports: ["8080:80"]
+  #   volumes:
+  #     - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+  #   depends_on: [api, web]
+  #   networks: [sarnet]
+
+volumes:
+  pgdata:
+  redisdata:
+  # ollamadata:   # TODO(part 2+)
+
+networks:
+  sarnet:
+    driver: bridge

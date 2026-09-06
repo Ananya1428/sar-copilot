@@ -1,0 +1,5 @@
+{
+  "_note": "Illustrative, non-authoritative list for synthetic data generation only. Not a real sanctions or high-risk jurisdiction list; do not use for actual compliance decisions.",
+  "high_risk": ["AF", "IR", "KP", "MM", "SY", "YE"],
+  "elevated_risk": ["PK", "NG", "PA", "PH", "RU"]
+}

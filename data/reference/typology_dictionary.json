@@ -1,0 +1,26 @@
+{
+  "STRUCTURING": {
+    "label": "Structuring / smurfing (deposits)",
+    "description": "Deposits engineered in amounts just below the reporting threshold to avoid detection."
+  },
+  "SMURFING": {
+    "label": "Smurfing (multiple originators)",
+    "description": "Many small deposits from many distinct originators concentrated into one account."
+  },
+  "RAPID_MOVEMENT": {
+    "label": "Rapid movement of funds",
+    "description": "A large share of credited value is moved out again within a short window, consistent with pass-through / layering."
+  },
+  "CIRCULAR_FLOW": {
+    "label": "Circular flow / round-tripping",
+    "description": "Funds move through a cycle of accounts and return to the origin with only a small reduction in value."
+  },
+  "HIGH_VELOCITY": {
+    "label": "High-velocity burst activity",
+    "description": "Transaction count in a short window far exceeds the account's established baseline."
+  },
+  "DORMANT_REACTIVATION": {
+    "label": "Dormant account reactivation",
+    "description": "An account with no activity for an extended period suddenly shows a burst of high-value transactions."
+  }
+}
