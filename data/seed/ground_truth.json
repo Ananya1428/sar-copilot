@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-06T07:16:05.890840+00:00",
+  "generated_at": "2026-09-06T07:46:54.507642+00:00",
   "builder_version": "0.1.0",
   "config": {
     "accounts": 50,
@@ -21,7 +21,7 @@
     {
       "typology": "STRUCTURING",
       "account_ref": "ACC-34957",
-      "customer_id": "d687e17e-7b30-467b-ab73-b880092c2fd5",
+      "customer_id": "910bdf3b-d467-40a6-9ff8-24d6a9a921ac",
       "transaction_refs": [
         "TXN-6302109556",
         "TXN-6288227800",
@@ -32,15 +32,15 @@
         "TXN-1116402431"
       ],
       "window": {
-        "start": "2026-08-17T21:22:59.023134+00:00",
-        "end": "2026-08-24T21:22:59.023134+00:00"
+        "start": "2026-08-17T21:53:48.023134+00:00",
+        "end": "2026-08-24T21:53:48.023134+00:00"
       },
       "total": "63116.04"
     },
     {
       "typology": "SMURFING",
       "account_ref": "ACC-97900",
-      "customer_id": "33952881-cae9-4ba5-a1a8-0def6b9f7c96",
+      "customer_id": "0706f49b-2b72-445e-9bb4-60639cf5742b",
       "transaction_refs": [
         "TXN-6923206003",
         "TXN-7105574449",
@@ -51,14 +51,14 @@
       ],
       "distinct_originators": 6,
       "window": {
-        "start": "2026-08-06T20:51:49.201048+00:00",
-        "end": "2026-08-20T20:51:49.201048+00:00"
+        "start": "2026-08-06T21:22:38.201048+00:00",
+        "end": "2026-08-20T21:22:38.201048+00:00"
       }
     },
     {
       "typology": "RAPID_MOVEMENT",
       "account_ref": "ACC-74032",
-      "customer_id": "c509b123-b836-4764-b04d-b6576545155b",
+      "customer_id": "e560be38-8345-45e5-9ae0-e8bd0b6de526",
       "transaction_refs": [
         "TXN-4085320828",
         "TXN-9410288290"
@@ -78,9 +78,9 @@
         "ACC-85880"
       ],
       "customer_ids": [
-        "57fed707-76fb-4545-ba70-cc89659347f1",
-        "25e4d078-6aca-449f-bfae-694dae1366d6",
-        "0a617cff-5b65-4c21-a257-a531006d4b37"
+        "9bbdcebb-9676-4b25-91a7-1058c420f15b",
+        "e155ab10-d70a-4575-a196-462412b7be6a",
+        "34a4189e-be4c-4350-b5ca-fd05ce0e77c1"
       ],
       "transaction_refs": [
         "TXN-2043030161",
@@ -93,14 +93,14 @@
       "retention": 0.797,
       "hops": 3,
       "window": {
-        "start": "2026-07-29T17:19:55.962340+00:00",
+        "start": "2026-07-29T17:50:44.962340+00:00",
         "end": "2026-07-31T16:54:23.762982+00:00"
       }
     },
     {
       "typology": "HIGH_VELOCITY",
       "account_ref": "ACC-89516",
-      "customer_id": "a4a45825-4d7e-4a9b-9576-79139bf060a2",
+      "customer_id": "e5d762b3-cfc4-4888-8c5b-edb94996b4cb",
       "transaction_refs": [
         "TXN-7291584955",
         "TXN-5667181604",
@@ -134,14 +134,14 @@
       ],
       "txn_count_24h": 29,
       "window": {
-        "start": "2026-07-29T16:07:34.745032+00:00",
-        "end": "2026-07-30T16:07:34.745032+00:00"
+        "start": "2026-07-29T16:38:23.745032+00:00",
+        "end": "2026-07-30T16:38:23.745032+00:00"
       }
     },
     {
       "typology": "DORMANT_REACTIVATION",
       "account_ref": "ACC-36100",
-      "customer_id": "12ac6fc7-9d3c-4b5b-881c-d0dc8bbd85ec",
+      "customer_id": "09b8d555-aa53-44a0-8e31-fd5fe4d60bca",
       "transaction_refs": [
         "TXN-8274273035",
         "TXN-5673181221",
@@ -153,8 +153,8 @@
       ],
       "dormant_days_before_burst": 55,
       "window": {
-        "start": "2026-09-01T07:16:05+00:00",
-        "end": "2026-09-06T07:16:05+00:00"
+        "start": "2026-09-01T07:46:54+00:00",
+        "end": "2026-09-06T07:46:54+00:00"
       }
     }
   ]

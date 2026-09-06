@@ -22,5 +22,25 @@
   "DORMANT_REACTIVATION": {
     "label": "Dormant account reactivation",
     "description": "An account with no activity for an extended period suddenly shows a burst of high-value transactions."
+  },
+  "CASH_INTENSIVE": {
+    "label": "Cash-intensive activity",
+    "description": "A disproportionate share of the account's transaction volume is conducted in cash relative to its profile."
+  },
+  "CROSS_BORDER_RISK": {
+    "label": "Cross-border jurisdiction exposure",
+    "description": "The account transacted with a counterparty located in a jurisdiction flagged as high or elevated risk."
+  },
+  "ROUND_AMOUNTS": {
+    "label": "Round-amount transaction pattern",
+    "description": "An unusually high share of transactions are in round, even amounts, inconsistent with ordinary commercial activity."
+  },
+  "PROFILE_DEVIATION": {
+    "label": "Deviation from declared profile",
+    "description": "Observed transaction volume substantially exceeds the volume the customer declared at onboarding."
+  },
+  "ML_ANOMALY": {
+    "label": "Statistical anomaly (unsupervised model)",
+    "description": "The account's behavioural profile was flagged as anomalous by the unsupervised detection ensemble, independent of any single deterministic rule."
   }
 }

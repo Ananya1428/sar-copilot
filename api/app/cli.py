@@ -5,6 +5,8 @@ Usage (inside the api container):
     python -m app.cli generate-data --accounts 500 --days 180
     python -m app.cli seed --if-empty
     python -m app.cli run-detection
+    python -m app.cli assemble-cases
+    python -m app.cli build-evidence --all
 """
 
 import json
@@ -12,11 +14,15 @@ import subprocess
 from pathlib import Path
 
 import typer
+from sqlalchemy import select
 
 from app.database import SessionLocal
 from app.domain.detection.orchestrator import run_detection
+from app.domain.evidence.builder import build_evidence_pack, persist_evidence_pack
+from app.domain.evidence.case_assembly import assemble_cases
 from app.domain.ingestion.synthetic import generate_dataset
 from app.models import Customer
+from app.models.case import Case
 
 app = typer.Typer(help="SAR Copilot administrative CLI")
 
@@ -102,6 +108,60 @@ def run_detection_cmd() -> None:
         session.close()
 
     typer.echo(json.dumps(summary, indent=2, default=str))
+
+
+@app.command("assemble-cases")
+def assemble_cases_cmd() -> None:
+    """Group fired HIGH/MEDIUM alerts (Part 2) into opened Cases (blueprint
+    §8 Journey B). Safe to run repeatedly."""
+    session = SessionLocal()
+    try:
+        summary = assemble_cases(session)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    typer.echo(json.dumps(summary, indent=2, default=str))
+
+
+@app.command("build-evidence")
+def build_evidence_cmd(
+    case_ref: str = typer.Option(None, "--case-ref", help="Build for a single case, e.g. CASE-0001"),
+    all_open: bool = typer.Option(False, "--all", help="Build for every OPEN case"),
+) -> None:
+    """Build and persist an EvidencePack (blueprint §10.2) for one or every
+    open case. Each call creates a NEW pack row — packs are immutable."""
+    if not case_ref and not all_open:
+        typer.echo("Specify --case-ref CASE-0001 or --all", err=True)
+        raise typer.Exit(code=1)
+
+    session = SessionLocal()
+    try:
+        if all_open:
+            cases = list(session.scalars(select(Case).where(Case.status == "OPEN")))
+        else:
+            case = session.scalars(select(Case).where(Case.case_ref == case_ref)).first()
+            if case is None:
+                typer.echo(f"No case with case_ref={case_ref}", err=True)
+                raise typer.Exit(code=1)
+            cases = [case]
+
+        built = []
+        for case in cases:
+            pack = build_evidence_pack(session, case)
+            persist_evidence_pack(session, case, pack)
+            built.append({"case_ref": case.case_ref, "pack_id": str(pack.pack_id), "content_hash": pack.content_hash})
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    typer.echo(json.dumps({"packs_built": len(built), "details": built}, indent=2, default=str))
 
 
 if __name__ == "__main__":
