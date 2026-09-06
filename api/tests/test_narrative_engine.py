@@ -1,5 +1,13 @@
 """Engine orchestration: section-scoping and retry/fallback, driven by a
-controlled mock LLM client — no real Ollama needed for these."""
+controlled mock LLM client — no real Ollama needed for these.
+
+All engines here pass `verifier=False`: these tests exercise the
+structural check and retry/fallback control flow in isolation, with mock
+sentence text that has nothing real to ground against. Part 5's real
+verification pipeline (default when `verifier` isn't overridden) has its
+own dedicated tests in test_verification_pipeline.py and
+test_engine_verification_gate.py.
+"""
 
 import json
 from unittest.mock import MagicMock
@@ -36,7 +44,7 @@ def test_section_scoping_restricts_evidence_sent_to_each_section():
 
     mock_llm.complete.side_effect = fake_complete
 
-    engine = NarrativeEngine(llm=mock_llm)
+    engine = NarrativeEngine(llm=mock_llm, verifier=False)
     engine.generate(pack, mode="HYBRID", seed=1)
 
     who_prompts = [p for p in seen_prompts if "SECTION: Subject identification" in p]
@@ -68,7 +76,7 @@ def test_invalid_json_on_first_attempt_triggers_retry_then_succeeds():
 
     mock_llm.complete.side_effect = fake_complete
 
-    engine = NarrativeEngine(llm=mock_llm, max_attempts=3)
+    engine = NarrativeEngine(llm=mock_llm, max_attempts=3, verifier=False)
     result = engine.generate(pack, mode="HYBRID", seed=1)
 
     assert result.mode == "HYBRID"
@@ -88,7 +96,7 @@ def test_insufficient_evidence_response_triggers_retry():
 
     mock_llm.complete.side_effect = fake_complete
 
-    engine = NarrativeEngine(llm=mock_llm, max_attempts=3)
+    engine = NarrativeEngine(llm=mock_llm, max_attempts=3, verifier=False)
     result = engine.generate(pack, mode="HYBRID", seed=1)
 
     assert result.mode == "HYBRID"
@@ -109,7 +117,7 @@ def test_sentence_with_no_evidence_keys_is_rejected_as_structural_failure():
 
     mock_llm.complete.side_effect = fake_complete
 
-    engine = NarrativeEngine(llm=mock_llm, max_attempts=3)
+    engine = NarrativeEngine(llm=mock_llm, max_attempts=3, verifier=False)
     result = engine.generate(pack, mode="HYBRID", seed=1)
 
     assert result.attempts == 2
@@ -121,7 +129,7 @@ def test_exhausting_all_attempts_falls_back_to_template():
     mock_llm.model_id = "mock-model"
     mock_llm.complete.return_value = CompletionResult(ok=True, text="not valid json")
 
-    engine = NarrativeEngine(llm=mock_llm, max_attempts=2)
+    engine = NarrativeEngine(llm=mock_llm, max_attempts=2, verifier=False)
     result = engine.generate(pack, mode="HYBRID", seed=1)
 
     assert result.mode == "TEMPLATE_FALLBACK"
@@ -135,7 +143,7 @@ def test_freeform_mode_makes_a_single_call():
     mock_llm.model_id = "mock-model"
     mock_llm.complete.return_value = CompletionResult(ok=True, text=_good_response(["subject.primary.legal_name"]))
 
-    engine = NarrativeEngine(llm=mock_llm)
+    engine = NarrativeEngine(llm=mock_llm, verifier=False)
     result = engine.generate(pack, mode="FREEFORM", seed=1)
 
     assert result.mode == "FREEFORM"

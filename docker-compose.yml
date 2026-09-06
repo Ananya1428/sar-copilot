@@ -87,6 +87,18 @@ services:
     volumes:
       - ./data:/srv/data
       - ./eval:/srv/eval
+    # GPU reservation (Part 5): the semantic entailment check's local NLI
+    # model (domain/verification/semantic.py) uses the same RTX 4060 the
+    # `ollama` service above already confirmed works with this exact
+    # reservation block. Not required — the check runs on CPU if this is
+    # unavailable in a given environment — just faster when it's there.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     networks: [sarnet]
 
   # TODO(part 3+): async narrative generation needs a worker.

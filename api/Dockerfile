@@ -16,11 +16,18 @@ WORKDIR /srv
 COPY requirements.txt ./
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# TODO(part 5): pre-download the NLI entailment model here once the
-# verification pipeline depends on `transformers`, e.g.:
-#   RUN python -c "from transformers import pipeline; \
-#       pipeline('text-classification', \
-#       model='MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli')"
+# Part 5: pre-download the semantic entailment check's NLI model at build
+# time, not at first request — so a container with no outbound network
+# access still has a working model (domain/verification/semantic.py loads
+# from the same on-disk HF cache either way). If this fails (e.g. building
+# offline), the image still builds; semantic.py degrades gracefully at
+# runtime (see its module docstring) rather than crashing the pipeline.
+RUN python -c "\
+from transformers import AutoModelForSequenceClassification, AutoTokenizer; \
+name = 'MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli'; \
+AutoTokenizer.from_pretrained(name); \
+AutoModelForSequenceClassification.from_pretrained(name)" \
+    || echo "WARNING: could not pre-download the NLI model at build time; semantic.py will fetch it at runtime or degrade gracefully if that also fails."
 
 COPY . .
 

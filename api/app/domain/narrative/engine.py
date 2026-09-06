@@ -3,16 +3,16 @@ generation, each section seeing ONLY its own `required_evidence` slice of
 the pack, assembled deterministically, with a retry-then-fallback control
 flow.
 
-Verification is Part 5's job — `self.verifier`, if given, is called after
-the structural check below and can reject a draft for reasons this part
-doesn't yet know how to check (hallucination, entailment, completeness).
-Until Part 5 exists, `verifier=None` means only the structural check
-gates release: valid JSON, not `INSUFFICIENT_EVIDENCE`, at least one
-sentence, and every sentence citing at least one evidence key. That's
-deliberately weaker than real verification — it catches a broken response,
-not a fabricated one — which is exactly the boundary the Part 4 brief
-draws ("this part just needs to PRODUCE a narrative ... it does not yet
-need to reject/retry on its own [for hallucination]").
+`self.verifier` is called after the structural check below and can reject
+a draft for reasons the structural check doesn't know how to catch
+(hallucination, entailment, completeness) — Part 5's real
+`verification.pipeline.Verifier` is now the default, closing the loop
+Part 4 left open. The structural check still runs first and
+unconditionally: valid JSON, not `INSUFFICIENT_EVIDENCE`, at least one
+sentence, and every sentence citing at least one evidence key. That
+catches a broken response cheaply, before spending a full verification
+pass (including the entailment check's NLI inference) on something that
+was never going to be usable anyway.
 """
 
 import json
@@ -27,10 +27,12 @@ from app.domain.narrative.deterministic import render_all_sections, render_secti
 from app.domain.narrative.llm_client import OllamaClient
 from app.domain.narrative.prompt_registry import PromptRegistry
 from app.domain.narrative.sections import NARRATIVE_SECTIONS
+from app.domain.verification.pipeline import Verifier, VerificationReport
 from app.models.case import Case
 from app.models.evidence import EvidencePack as EvidencePackRow
 from app.models.narrative import Narrative as NarrativeRow
 from app.models.narrative import NarrativeSentence as NarrativeSentenceRow
+from app.models.verification import VerificationReport as VerificationReportRow
 
 MAX_ATTEMPTS = 3
 DEFAULT_TEMPERATURE = 0.1
@@ -50,6 +52,7 @@ class GenerationResult:
     seed: int
     attempts: int
     notes: list[str] = field(default_factory=list)
+    verification_report: VerificationReport | None = None
 
 
 def _serialize_evidence_value(value):
@@ -64,7 +67,11 @@ class NarrativeEngine:
     def __init__(self, llm: OllamaClient | None = None, prompts: PromptRegistry | None = None, verifier=None, max_attempts: int = MAX_ATTEMPTS):
         self.llm = llm or OllamaClient()
         self.prompts = prompts or PromptRegistry(settings.prompt_version)
-        self.verifier = verifier
+        # Real verification (blueprint §14) is the default now — Part 4 left
+        # `verifier=None` as a hook; Part 5 is what plugs something real
+        # into it. `verifier=False` (not None) opts out entirely, for tests
+        # that want to exercise the structural check in isolation.
+        self.verifier = Verifier() if verifier is None else (None if verifier is False else verifier)
         self.max_attempts = max_attempts
 
     def generate(self, pack: EvidencePack, mode: str = "HYBRID", seed: int = 42) -> GenerationResult:
@@ -87,6 +94,7 @@ class NarrativeEngine:
             if not structural_ok:
                 continue
 
+            report = None
             if self.verifier is not None:
                 report = self.verifier.verify(sentences, pack)
                 if not getattr(report, "passed", False):
@@ -102,6 +110,7 @@ class NarrativeEngine:
                 seed=attempt_seed,
                 attempts=attempt,
                 notes=notes,
+                verification_report=report,
             )
 
         result = self._deterministic(pack, seed, attempts=self.max_attempts)
@@ -113,6 +122,7 @@ class NarrativeEngine:
 
     def _deterministic(self, pack: EvidencePack, seed: int, attempts: int) -> GenerationResult:
         sentences = render_all_sections(pack)
+        report = self.verifier.verify(sentences, pack) if self.verifier is not None else None
         return GenerationResult(
             narrative_text=self._assemble(sentences),
             sentences=sentences,
@@ -121,6 +131,7 @@ class NarrativeEngine:
             prompt_version=None,
             seed=seed,
             attempts=attempts,
+            verification_report=report,
         )
 
     def _generate_sections(self, pack: EvidencePack, seed: int) -> tuple[list[dict], list[str]]:
@@ -250,6 +261,12 @@ class NarrativeEngine:
                 s["section"] = "freeform"
             notes.extend(parse_notes)
 
+        # FREEFORM is never released in production (blueprint §13.2) — it
+        # is still verified so the evaluation harness (§23) can compare its
+        # hallucination rate against HYBRID/TEMPLATE, which is the entire
+        # point of shipping it at all.
+        report = self.verifier.verify(sentences, pack) if (self.verifier is not None and sentences) else None
+
         return GenerationResult(
             narrative_text=self._assemble(sentences),
             sentences=sentences,
@@ -259,6 +276,7 @@ class NarrativeEngine:
             seed=seed,
             attempts=1,
             notes=notes,
+            verification_report=report,
         )
 
 
@@ -278,13 +296,19 @@ def _next_narrative_version(session: Session, case_id) -> int:
 
 def persist_narrative(session: Session, case: Case, pack_row: EvidencePackRow, result: GenerationResult) -> NarrativeRow:
     """Persists a GenerationResult into Part 1's Narrative/NarrativeSentence
-    rows. Reproducibility (blueprint §15.3) needs `pack_id` (-> the pack
-    row's own `content_hash`), `prompt_version`, `model_id`, and `seed` —
-    all recorded here; no separate content_hash column is needed on
-    Narrative itself since it's reachable via `narrative.pack.content_hash`.
-    `verified=False` always, for now — Part 5 is what earns that flag.
+    rows, plus (Part 5) a VerificationReport row when `result` carries one.
+    Reproducibility (blueprint §15.3) needs `pack_id` (-> the pack row's
+    own `content_hash`), `prompt_version`, `model_id`, and `seed` — all
+    recorded here; no separate content_hash column is needed on Narrative
+    itself since it's reachable via `narrative.pack.content_hash`.
+
+    `verified` reflects the real `VerificationReport.passed` now — `False`
+    only when no verifier ran at all (`result.verification_report is None`,
+    e.g. `NarrativeEngine(verifier=False)` in tests that isolate the
+    structural check).
     """
     version = _next_narrative_version(session, case.id)
+    report = result.verification_report
     narrative = NarrativeRow(
         pack_id=pack_row.id,
         version=version,
@@ -293,21 +317,35 @@ def persist_narrative(session: Session, case: Case, pack_row: EvidencePackRow, r
         model_id=result.model_id,
         prompt_version=result.prompt_version,
         seed=result.seed,
-        verified=False,
+        verified=bool(report.passed) if report is not None else False,
     )
     session.add(narrative)
     session.flush()
 
-    for ordinal, sentence in enumerate(result.sentences, start=1):
+    sentence_scores = report.checks["entailment"].details.get("sentence_scores", {}) if report is not None else {}
+
+    for idx, sentence in enumerate(result.sentences):
+        grounding_score = sentence_scores.get(idx)
         session.add(
             NarrativeSentenceRow(
                 narrative_id=narrative.id,
-                ordinal=ordinal,
+                ordinal=idx + 1,
                 text=sentence["text"],
                 w_category=sentence.get("section"),
                 evidence_keys=sentence.get("evidence_keys") or [],
-                grounding_score=None,  # Part 5 concept — no real verifier scoring sentences yet
+                grounding_score=grounding_score,
             )
         )
+
+    if report is not None:
+        session.add(
+            VerificationReportRow(
+                narrative_id=narrative.id,
+                passed=report.passed,
+                checks=report.to_jsonable(),
+                overall_score=report.overall_score,
+            )
+        )
+
     session.flush()
     return narrative

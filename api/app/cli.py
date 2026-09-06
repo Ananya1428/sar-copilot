@@ -224,6 +224,14 @@ def generate_narrative_cmd(
     typer.echo(f"latency_seconds:  {elapsed:.2f}")
     if result.notes:
         typer.echo(f"notes:            {result.notes}")
+    if result.verification_report is not None:
+        report = result.verification_report
+        typer.echo("")
+        typer.echo(f"verification:     {report}")
+        for name, check in report.checks.items():
+            typer.echo(f"  {name:12s} severity={check.severity:8s} passed={check.passed!s:5s} score={check.score:.3f} violations={len(check.violations)}")
+            for v in check.violations[:5]:
+                typer.echo(f"      - {v.message}")
     typer.echo("")
     typer.echo("--- NARRATIVE ---")
     typer.echo(result.narrative_text)

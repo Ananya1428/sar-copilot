@@ -36,4 +36,7 @@ evidence: ## Build an EvidencePack for every open case
 narrative: ## Generate a HYBRID-mode narrative for a case: make narrative CASE=CASE-0001
 	docker compose exec api python -m app.cli generate-narrative --case-ref $(CASE) --mode HYBRID
 
-# TODO(part 5+): verification pipeline, audit ledger, frontend.
+adversarial: ## Run the hand-crafted adversarial suite (blueprint §22/§23.3) and print a caught/missed report
+	docker compose exec api python eval/adversarial_cases.py
+
+# TODO(part 6+): audit ledger, frontend.
