@@ -19,6 +19,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.domain.audit.ledger import AuditLedger
 from app.models.account import Account
 from app.models.alert import Alert
 from app.models.case import Case
@@ -44,13 +45,18 @@ def _next_case_ref(session: Session) -> str:
     return f"{CASE_REF_PREFIX}{max_n + 1:0{CASE_REF_DIGITS}d}"
 
 
-def assemble_cases(session: Session) -> dict:
+def assemble_cases(session: Session, actor_id: uuid.UUID | None = None) -> dict:
     """For every account with at least one HIGH/MEDIUM alert, ensure an
     OPEN case exists linking all of that account's such alerts, creating
     one if needed. Safe to call repeatedly: an account whose alerts are
     already linked to an open case gets new alerts attached to that same
-    case rather than a duplicate one."""
+    case rather than a duplicate one.
 
+    `actor_id` is `None` for the batch CLI path (this function has no
+    caller with a real user session yet) — audit records permit a null
+    actor for exactly this reason."""
+
+    ledger = AuditLedger(session)
     alerts = session.scalars(select(Alert).where(Alert.severity.in_(CASE_OPENING_SEVERITIES))).all()
 
     by_account: dict[uuid.UUID, list[Alert]] = defaultdict(list)
@@ -85,6 +91,23 @@ def assemble_cases(session: Session) -> dict:
             session.flush()  # assign case.id before the FK use below
 
             session.add(CaseSubject(case_id=case.id, customer_id=account.customer_id, role="primary"))
+
+            ledger.append(
+                case_id=case.id,
+                actor_id=actor_id,
+                action="CASE_OPENED",
+                after_state={
+                    "case_ref": case.case_ref,
+                    "status": case.status,
+                    "risk_score": float(case.risk_score) if case.risk_score is not None else None,
+                    "opened_at": case.opened_at.isoformat(),
+                    "deadline_at": case.deadline_at.isoformat() if case.deadline_at else None,
+                },
+                metadata={
+                    "account_id": str(account_id),
+                    "alert_ids": [str(alert.id) for alert in account_alerts],
+                },
+            )
 
             cases_created += 1
             existing_case = case

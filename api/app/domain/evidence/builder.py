@@ -51,6 +51,7 @@ from sqlalchemy.orm import Session
 
 from jinja2 import Template
 
+from app.domain.audit.ledger import AuditLedger
 from app.domain.detection.thresholds import RAPID_MOVEMENT_WINDOW_HOURS, RULE_WEIGHTS
 from app.domain.evidence.schema import (
     AggregateEvidence,
@@ -436,7 +437,9 @@ def build_evidence_pack(session: Session, case: Case) -> EvidencePack:
     )
 
 
-def persist_evidence_pack(session: Session, case: Case, pack: EvidencePack) -> EvidencePackRow:
+def persist_evidence_pack(
+    session: Session, case: Case, pack: EvidencePack, actor_id: uuid.UUID | None = None
+) -> EvidencePackRow:
     """Always inserts a new row — packs are immutable/versioned (blueprint
     §9.2 P3); building a second pack for the same case must never overwrite
     the first."""
@@ -464,4 +467,18 @@ def persist_evidence_pack(session: Session, case: Case, pack: EvidencePack) -> E
             )
         )
     session.flush()
+
+    AuditLedger(session).append(
+        case_id=case.id,
+        actor_id=actor_id,
+        action="EVIDENCE_BUILT",
+        after_state={
+            "pack_id": str(row.id),
+            "content_hash": row.content_hash,
+            "builder_version": row.builder_version,
+            "item_count": len(pack.items),
+        },
+        metadata={"built_at": pack.built_at.isoformat()},
+    )
+
     return row

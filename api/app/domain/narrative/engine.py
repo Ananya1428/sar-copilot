@@ -16,12 +16,14 @@ was never going to be usable anyway.
 """
 
 import json
+import uuid
 from dataclasses import dataclass, field
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.domain.audit.ledger import AuditLedger
 from app.domain.evidence.schema import EvidencePack
 from app.domain.narrative.deterministic import render_all_sections, render_section
 from app.domain.narrative.llm_client import OllamaClient
@@ -53,6 +55,10 @@ class GenerationResult:
     attempts: int
     notes: list[str] = field(default_factory=list)
     verification_report: VerificationReport | None = None
+    # One entry per rejected HYBRID attempt (structural-check failure or a
+    # verifier rejection) — audit trail material (blueprint §15.2
+    # VERIFICATION_FAILED), not just a diagnostic string.
+    failed_attempts: list[dict] = field(default_factory=list)
 
 
 def _serialize_evidence_value(value):
@@ -91,6 +97,7 @@ class NarrativeEngine:
         # diagnostic the moment a later attempt succeeded or failed anew.
         all_notes: list[str] = []
         last_attempt_notes: list[str] = []
+        failed_attempts: list[dict] = []
         for attempt in range(1, self.max_attempts + 1):
             attempt_seed = seed + attempt - 1
             sentences, notes = self._generate_sections(pack, attempt_seed)
@@ -100,6 +107,15 @@ class NarrativeEngine:
             last_attempt_notes = attempt_notes
 
             if not structural_ok:
+                failed_attempts.append(
+                    {
+                        "attempt": attempt,
+                        "seed": attempt_seed,
+                        "reason": "structural_check_failed",
+                        "notes": attempt_notes,
+                        "verification_report": None,
+                    }
+                )
                 continue
 
             report = None
@@ -109,6 +125,15 @@ class NarrativeEngine:
                     failure_note = f"verification failed: {report}"
                     all_notes.append(failure_note)
                     last_attempt_notes = attempt_notes + [failure_note]
+                    failed_attempts.append(
+                        {
+                            "attempt": attempt,
+                            "seed": attempt_seed,
+                            "reason": "verification_failed",
+                            "notes": attempt_notes + [failure_note],
+                            "verification_report": report.to_jsonable(),
+                        }
+                    )
                     continue
 
             return GenerationResult(
@@ -121,6 +146,7 @@ class NarrativeEngine:
                 attempts=attempt,
                 notes=all_notes,
                 verification_report=report,
+                failed_attempts=failed_attempts,
             )
 
         result = self._deterministic(pack, seed, attempts=self.max_attempts)
@@ -128,6 +154,7 @@ class NarrativeEngine:
         result.notes = all_notes + result.notes + [
             f"HYBRID generation failed after {self.max_attempts} attempt(s): {'; '.join(last_attempt_notes) or 'no diagnostic notes'}"
         ]
+        result.failed_attempts = failed_attempts
         return result
 
     def _deterministic(self, pack: EvidencePack, seed: int, attempts: int) -> GenerationResult:
@@ -304,7 +331,13 @@ def _next_narrative_version(session: Session, case_id) -> int:
     return (last or 0) + 1
 
 
-def persist_narrative(session: Session, case: Case, pack_row: EvidencePackRow, result: GenerationResult) -> NarrativeRow:
+def persist_narrative(
+    session: Session,
+    case: Case,
+    pack_row: EvidencePackRow,
+    result: GenerationResult,
+    actor_id: uuid.UUID | None = None,
+) -> NarrativeRow:
     """Persists a GenerationResult into Part 1's Narrative/NarrativeSentence
     rows, plus (Part 5) a VerificationReport row when `result` carries one.
     Reproducibility (blueprint §15.3) needs `pack_id` (-> the pack row's
@@ -358,4 +391,46 @@ def persist_narrative(session: Session, case: Case, pack_row: EvidencePackRow, r
         )
 
     session.flush()
+
+    ledger = AuditLedger(session)
+    # Rejected attempts happened chronologically before the narrative that
+    # was ultimately persisted (whether that's an accepted HYBRID draft or
+    # the TEMPLATE_FALLBACK) — write those first so the ledger's occurred_at
+    # ordering matches reality.
+    for failed in result.failed_attempts:
+        ledger.append(
+            case_id=case.id,
+            actor_id=actor_id,
+            action="VERIFICATION_FAILED",
+            after_state=failed["verification_report"],
+            metadata={
+                "narrative_id": str(narrative.id),
+                "attempt": failed["attempt"],
+                "seed": failed["seed"],
+                "reason": failed["reason"],
+                "notes": failed["notes"],
+            },
+        )
+
+    ledger.append(
+        case_id=case.id,
+        actor_id=actor_id,
+        action="NARRATIVE_GENERATED",
+        after_state={
+            "id": str(narrative.id),
+            "version": narrative.version,
+            "generation_mode": narrative.generation_mode,
+            "verified": narrative.verified,
+        },
+        metadata={
+            "model_id": narrative.model_id,
+            "prompt_version": narrative.prompt_version,
+            "seed": narrative.seed,
+            "pack_id": str(pack_row.id),
+            "verification": (
+                {"passed": report.passed, "overall_score": float(report.overall_score)} if report is not None else None
+            ),
+        },
+    )
+
     return narrative
