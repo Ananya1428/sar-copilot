@@ -1,27 +1,35 @@
 """The Week 5 gate (blueprint §22: "the week 5 gate is the project") and
 the adversarial half of §23's evaluation methodology: hand-crafted
 narratives, each built from `tests.narrative_factories.make_sample_pack()`
-with exactly ONE deliberately injected error, labeled with which of the
-six checks (`pipeline.WEIGHTS` keys) must be the one to catch it.
+with exactly ONE deliberately injected error, labeled with which check(s)
+(`pipeline.WEIGHTS` keys) must be the one(s) to catch it.
 
-This is a SUBSET of the full ten-case suite the blueprint describes (the
-full ten cases + a confusion matrix across TEMPLATE/HYBRID/FREEFORM is
-Part 7's job) — the six cases that map one-to-one onto Part 5's six
-checks, per this part's brief.
+The full ten-case suite blueprint §23.3 describes: six cases added in
+Part 5 that map one-to-one onto Part 5's six checks, plus four more added
+in Part 7 (intent_speculation, silent_rounding, system_disclosure,
+single_digit_account) to reach the blueprint's complete list. See
+EVALUATION.md for the full confusion matrix and what it actually found
+(including a real, currently unaddressed blind spot —
+single_digit_account).
 
-Run directly for a human-readable report:
+Run directly for a human-readable report + full confusion matrix, saved
+to eval/results/:
 
-    docker compose exec api python eval/adversarial_cases.py
+    docker compose exec api python eval/adversarial_cases.py           # real local NLI model
+    docker compose exec api python eval/adversarial_cases.py --stub    # deterministic stub (fast)
 
-or via pytest (api/tests/test_adversarial_cases.py), which asserts each
-case is caught by exactly the right check and NOT by the others.
+or via pytest (api/tests/test_adversarial_cases.py), which always uses
+the stub and asserts each case is caught by exactly the right check(s)
+and NOT by the others.
 """
 
+import json
 import os
 import sys
 import time
 from copy import deepcopy
 from dataclasses import dataclass
+from pathlib import Path
 
 sys.path.insert(0, os.getcwd())
 
@@ -35,13 +43,20 @@ from tests.narrative_factories import make_sample_pack  # noqa: E402
 class AdversarialCase:
     name: str
     description: str
-    expected_catcher: str  # a key in pipeline.WEIGHTS, or None if nothing should fire
+    expected_catcher: str | None  # a key in pipeline.WEIGHTS, or None if NO check is expected to fire
     sentences: list[dict]
     # Sentence texts this case wants the (possibly stubbed) entailment
     # classifier to treat as NOT entailed — only the relationship-
     # fabrication case sets this; every other case relies on the real
     # checks 1-4/prohibited/completeness alone.
     low_entailment_texts: frozenset[str] = frozenset()
+    # Additional checks legitimately expected to ALSO fail alongside
+    # expected_catcher — e.g. system_disclosure's fabricated score is both
+    # a prohibited self-reference AND an ungrounded number; forcing that
+    # into a single-check isolation would mean rewriting away the task's
+    # own literal example text for no honest benefit. Empty for every case
+    # that genuinely does isolate to one check.
+    also_catchers: frozenset[str] = frozenset()
 
 
 def base_sentences() -> list[dict]:
@@ -153,6 +168,57 @@ def build_cases() -> list[AdversarialCase]:
 
     section_omission = [s for s in deepcopy(clean) if s["section"] != "why"]
 
+    # blueprint §23.3's remaining four cases (Part 7). All four reuse the
+    # same base pack/sentences as the six above; only one sentence changes
+    # per case, same discipline.
+
+    # "appears to have been done in order to conceal" — prohibited.py's
+    # SPECULATION family (r"\bappears to (be|have)\b", r"\bin order to
+    # (evade|avoid|conceal)\b"), not a numeric/entity/temporal issue at all.
+    intent_speculation = deepcopy(clean)
+    for s in intent_speculation:
+        if s["section"] == "why":
+            s["text"] += " This appears to have been done in order to conceal the source of funds."
+
+    # The real observed_monthly_volume is 128500.00 (see
+    # narrative_factories.make_sample_pack) — "approximately 130,000.00" is
+    # a small, plausible-sounding rounding that is still a fabricated
+    # number: the numeric check has zero tolerance for "close enough",
+    # which is the entire point of this case (blueprint's "silent
+    # rounding" attack — the kind of drift a human reviewer skimming past
+    # a big number would very plausibly wave through).
+    silent_rounding = _replace_sentence(
+        clean, "why",
+        "Observed monthly volume of approximately 130,000.00 was substantially above the "
+        "expected monthly volume of 15000.00 declared for this customer.",
+    )
+
+    # "anomaly score" is a literal entry in prohibited.py's
+    # SYSTEM_SELF_REFERENCE family — this is the narrative naming its own
+    # detection machinery, which blueprint §14.4/§26 both flag as an
+    # absolute prohibition regardless of whether the number itself is real.
+    system_disclosure = deepcopy(clean)
+    for s in system_disclosure:
+        if s["section"] == "how":
+            s["text"] += " An anomaly score of 0.87 was assigned by the detection system."
+
+    # The real account is ACC-88213 (narrative_factories.make_sample_pack);
+    # this case substitutes ACC-88214 — a single digit off. Deliberately
+    # NOT expected to be caught by any of the six checks: numeric.py's
+    # REFERENCE_CODE regex (`[A-Za-z]+-\d+`) excludes an entire reference
+    # code's digit run from numeric grounding by design (so a real account
+    # ref's digits are never flagged as an "ungrounded number"), and
+    # entity.py's CAPITALIZED_SEQUENCE pattern has a negative lookahead
+    # `(?!-\d)` that refuses to treat "ACC" followed by "-88214" as a
+    # candidate entity at all — both exclusions exist specifically to avoid
+    # false-positiving on legitimate reference codes, and a single-digit
+    # substitution exploits exactly that blind spot. See eval/results/ for
+    # whether the real entailment model catches it anyway (it wasn't
+    # designed to, but semantic dissonance is possible); the stub
+    # classifier used by the pytest suite below will not.
+    single_digit_account_text = "Rajesh Mehta holds account ACC-88214 and has been a customer since 2021-06-14, with a stated occupation of Retail Trader."
+    single_digit_account = _replace_sentence(clean, "who", single_digit_account_text)
+
     return [
         AdversarialCase(
             name="numeric_fabrication",
@@ -191,6 +257,44 @@ def build_cases() -> list[AdversarialCase]:
             expected_catcher="completeness",
             sentences=section_omission,
         ),
+        AdversarialCase(
+            name="intent_speculation",
+            description="Unfounded speculation about intent/motive, phrased plausibly.",
+            expected_catcher="prohibited",
+            sentences=intent_speculation,
+        ),
+        AdversarialCase(
+            name="silent_rounding",
+            description="A materially-rounded figure presented as the real one (128500.00 -> ~130,000.00).",
+            expected_catcher="numeric",
+            sentences=silent_rounding,
+        ),
+        AdversarialCase(
+            name="system_disclosure",
+            description="The narrative discloses its own detection system's internal output (an anomaly score).",
+            expected_catcher="prohibited",
+            sentences=system_disclosure,
+            # The disclosed score ("0.87") is itself a number absent from
+            # the evidence pack, so numeric legitimately fails too — two
+            # independent checks both catching the same fabrication is a
+            # real defense-in-depth result, not a test design flaw.
+            also_catchers=frozenset({"numeric"}),
+        ),
+        AdversarialCase(
+            name="single_digit_account",
+            description="A single-digit account-number substitution (ACC-88213 -> ACC-88214) — a known pipeline blind spot, see module docstring.",
+            expected_catcher=None,
+            sentences=single_digit_account,
+            # Deliberately NOT added to low_entailment_texts: the stub
+            # classifier (used by the fast pytest suite) should behave like
+            # an agreeable baseline here, same as every other clean
+            # sentence, so that suite honestly demonstrates "checks 1-4
+            # plus a non-adversarial entailment stand-in catch nothing."
+            # Whether the REAL entailment model catches this by accident
+            # (semantic dissonance, not by design) is an empirical
+            # question answered separately by run_full_suite() below,
+            # against the real model — not scripted here.
+        ),
     ]
 
 
@@ -211,31 +315,90 @@ def make_stub_classifier(low_confidence_texts: frozenset[str]) -> Classifier:
     return classify
 
 
-def run_case(case: AdversarialCase, pack: EvidencePack, classifier: Classifier | None = None) -> tuple[VerificationReport, float]:
-    active_classifier = classifier if classifier is not None else make_stub_classifier(case.low_entailment_texts)
+def run_case(case: AdversarialCase, pack: EvidencePack, use_real_model: bool = False) -> tuple[VerificationReport, float]:
+    """`use_real_model=False` (the default — what the fast pytest suite
+    uses) builds this case's stub classifier. `use_real_model=True` passes
+    `entailment_classifier=None` through to `run_pipeline`, which is what
+    actually triggers semantic.py's real lazy-loaded local NLI model — an
+    earlier version of this function conflated "no classifier object
+    passed in" with "use the stub", which meant asking for the real model
+    silently got the stub instead (the giveaway: entailment scores landing
+    on exactly the stub's hardcoded 0.95/0.05 no matter what). Fixed by
+    making the choice an explicit flag instead of overloading None.
+    """
+    classifier = None if use_real_model else make_stub_classifier(case.low_entailment_texts)
     start = time.monotonic()
-    report = run_pipeline(case.sentences, pack, entailment_classifier=active_classifier)
+    report = run_pipeline(case.sentences, pack, entailment_classifier=classifier)
     elapsed = time.monotonic() - start
     return report, elapsed
 
 
+# A human reviewer skimming a fluent, well-formatted draft would very
+# plausibly wave these through — they're the headline result per blueprint
+# §23.3. `single_digit_account` is included here too even though the
+# pipeline is NOT expected to catch it (see its case docstring) — it's a
+# human-plausible miss either way, just one where we can't yet claim the
+# system does better.
+HUMAN_PLAUSIBLE_MISSES = frozenset({"relationship_fabrication", "silent_rounding", "single_digit_account"})
+
+
 def main() -> int:
+    """Full ten-case confusion matrix (blueprint §23.3 / Part 7).
+
+    By default uses the real local NLI entailment model (None ->
+    semantic.py lazy-loads it), because this is meant to be a genuine
+    evaluation record of the ACTUAL production pipeline, not the
+    deterministic stub the fast pytest suite uses for CI speed. Pass
+    --stub to use the stub instead (useful for a quick sanity check
+    without waiting on model load / GPU inference).
+    """
+    use_stub = "--stub" in sys.argv
     pack = make_sample_pack()
     cases = build_cases()
 
-    print(f"{'case':28s} {'expected':13s} {'caught_by':40s} {'result':6s} {'elapsed_s':>9s}")
+    results = []
+    print(f"{'case':24s} {'expected':13s} {'caught_by':40s} {'result':10s} {'elapsed_s':>9s}")
     print("-" * 100)
 
     all_ok = True
     for case in cases:
-        report, elapsed = run_case(case, pack)
+        report, elapsed = run_case(case, pack, use_real_model=not use_stub)
         caught_by = sorted(name for name, result in report.checks.items() if not result.passed)
-        ok = caught_by == [case.expected_catcher]
+        expected_set = ({case.expected_catcher} if case.expected_catcher is not None else set()) | set(case.also_catchers)
+        expected = sorted(expected_set)
+        ok = caught_by == expected
         all_ok = all_ok and ok
-        print(f"{case.name:28s} {case.expected_catcher:13s} {', '.join(caught_by) or '(none)':40s} {'OK' if ok else 'MISS':6s} {elapsed:9.3f}")
+        label = "CAUGHT" if (ok and expected) else ("OK (no catch)" if ok else "MISS")
+        results.append(
+            {
+                "case": case.name,
+                "description": case.description,
+                "expected_catcher": case.expected_catcher,
+                "caught_by": caught_by,
+                "outcome": label,
+                "human_plausible_miss": case.name in HUMAN_PLAUSIBLE_MISSES,
+                "elapsed_s": round(elapsed, 4),
+            }
+        )
+        expected_str = case.expected_catcher or "(none)"
+        print(f"{case.name:24s} {expected_str:13s} {', '.join(caught_by) or '(none)':40s} {label:10s} {elapsed:9.3f}")
 
     print("-" * 100)
-    print("ALL CASES CAUGHT BY THE RIGHT CHECK" if all_ok else "SOME CASES WERE MISCAUGHT — see MISS rows above")
+    print(f"classifier: {'stub (deterministic)' if use_stub else 'real local NLI model'}")
+    print("ALL CASES BEHAVED AS EXPECTED" if all_ok else "SOME CASES DID NOT MATCH THE EXPECTED CATCHER — see MISS rows above")
+    print()
+    print("Human-plausible misses (a reviewer skimming a fluent draft would very likely wave these through):")
+    for r in results:
+        if r["human_plausible_miss"]:
+            verdict = "caught by the pipeline" if r["caught_by"] else "NOT caught by the pipeline"
+            print(f"  - {r['case']}: {verdict} ({', '.join(r['caught_by']) or 'no check fired'})")
+
+    suffix = "stub" if use_stub else "real_nli"
+    out_path = Path(__file__).parent / "results" / f"adversarial_suite_{suffix}.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps({"classifier": suffix, "cases": results}, indent=2))
+    print(f"\nWrote {out_path}")
+
     return 0 if all_ok else 1
 
 

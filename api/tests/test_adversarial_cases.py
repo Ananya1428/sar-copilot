@@ -17,10 +17,14 @@ def test_case_is_caught_by_exactly_the_expected_check(name):
     pack = make_sample_pack()
     report, _elapsed = run_case(case, pack)
 
+    # expected_catcher=None (currently only single_digit_account) means NO
+    # check is expected to fire — a documented pipeline blind spot, not an
+    # oversight in this test. also_catchers covers cases (system_disclosure)
+    # where the injected error legitimately trips more than one check at
+    # once. See adversarial_cases.py's module-level comments for both.
+    expected = ({case.expected_catcher} if case.expected_catcher is not None else set()) | set(case.also_catchers)
     failing = {check_name for check_name, result in report.checks.items() if not result.passed}
-    assert failing == {case.expected_catcher}, (
-        f"{name}: expected only {case.expected_catcher!r} to fail, got {sorted(failing)}"
-    )
+    assert failing == expected, f"{name}: expected only {expected or '(nothing)'} to fail, got {sorted(failing)}"
 
 
 def test_relationship_fabrication_passes_checks_1_through_4():
