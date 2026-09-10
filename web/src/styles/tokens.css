@@ -1,0 +1,75 @@
+/*
+ * Design tokens — blueprint §17.
+ * "Forensic ledger": a document under examination, not a SaaS dashboard.
+ * Colour is reserved exclusively for verification state (--verified,
+ * --caution, --critical, --trace + their -bg pairs). Everything else in
+ * the interface is ink-on-paper grayscale.
+ */
+
+:root {
+  /* Surfaces */
+  --paper: #fcfcfa; /* the narrative pane itself */
+  --canvas: #f1f2f4; /* the page background behind all three panes */
+  --panel: #ffffff; /* rail + evidence panel surfaces */
+  --rule: #dfe1e5; /* hairlines, dividers, borders */
+
+  /* Ink */
+  --ink: #16181c;
+  --ink-muted: #5b6069;
+  --ink-faint: #8b9098;
+
+  /* Signal — verification state only. Never used decoratively. */
+  --verified: #0f7b4f;
+  --verified-bg: #e6f4ed;
+  --caution: #a66a00;
+  --caution-bg: #fcf2e0;
+  --critical: #b3261e;
+  --critical-bg: #fce9e7;
+  --trace: #1b4fbf;
+  --trace-bg: #e4ebfb;
+
+  /* Type stacks */
+  --font-narrative: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+
+  /* Type scale — major third (×1.25), 11px through 27px */
+  --text-2xs: 11px;
+  --text-xs: 13px;
+  --text-sm: 14px;
+  --text-base: 18px; /* narrative body */
+  --text-lg: 23px;
+  --text-xl: 27px;
+
+  /* Spacing — 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radii — minimal; this is a document tool, not a rounded-card SaaS kit */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+
+  /* Motion — the ONLY animated thing in the product is the hover-trace
+     dim/highlight transition (see globals.css / sentence buttons) */
+  --motion-duration: 120ms;
+  --motion-ease: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration: 0ms;
+  }
+  * {
+    animation-duration: 0ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}

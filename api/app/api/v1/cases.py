@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.v1.narratives import _narrative_dict
 from app.deps import get_current_user, get_db
 from app.domain.detection.scoring import band_for_score
 from app.domain.evidence.builder import build_evidence_pack, persist_evidence_pack
@@ -93,20 +94,6 @@ def generate_case_narrative(
     result = engine.generate(pack, mode=mode, seed=seed)
     narrative_row = persist_narrative(db, case, pack_row, result, actor_id=user["id"])
     db.commit()
+    db.refresh(narrative_row)
 
-    return {
-        "id": str(narrative_row.id),
-        "case_ref": case.case_ref,
-        "pack_id": str(pack_row.id),
-        "version": narrative_row.version,
-        "generation_mode": narrative_row.generation_mode,
-        "model_id": narrative_row.model_id,
-        "prompt_version": narrative_row.prompt_version,
-        "seed": narrative_row.seed,
-        "body": narrative_row.body,
-        "sentences": [
-            {"ordinal": i, "text": s["text"], "section": s.get("section"), "evidence_keys": s.get("evidence_keys", [])}
-            for i, s in enumerate(result.sentences, start=1)
-        ],
-        "notes": result.notes,
-    }
+    return {**_narrative_dict(db, narrative_row), "case_ref": case.case_ref, "notes": result.notes}

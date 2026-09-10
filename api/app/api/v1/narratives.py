@@ -44,6 +44,7 @@ def _latest_report(db: Session, narrative_id: uuid.UUID) -> VerificationReportRo
 
 def _narrative_dict(db: Session, narrative: Narrative) -> dict:
     sentences = sorted(narrative.sentences, key=lambda s: s.ordinal)
+    report = _latest_report(db, narrative.id)
     return {
         "id": str(narrative.id),
         "pack_id": str(narrative.pack_id),
@@ -64,6 +65,14 @@ def _narrative_dict(db: Session, narrative: Narrative) -> dict:
             }
             for s in sentences
         ],
+        # Full per-check breakdown (blueprint §14.7) — the frontend's
+        # always-visible VerificationCard (§18 Screen 2) needs the real
+        # checks/violations, not just the summary `verified` bool above.
+        "verification": (
+            {"passed": report.passed, "overall_score": float(report.overall_score), "checks": report.checks}
+            if report is not None
+            else None
+        ),
     }
 
 
