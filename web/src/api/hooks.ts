@@ -27,6 +27,20 @@ export function useEvidencePack(caseId: string | undefined) {
   });
 }
 
+/**
+ * A specific pack by id, not "latest for a case" — a narrative generated
+ * against an older pack (evidence packs are immutable/versioned; a case
+ * can have several) needs its own exact pack, e.g. for the Verification
+ * Detail screen's "nearest evidence values" comparison.
+ */
+export function useEvidencePackById(packId: string | undefined) {
+  return useQuery({
+    queryKey: ["evidence-pack", packId],
+    queryFn: () => api.get<EvidencePack>(`/evidence/${packId}`),
+    enabled: Boolean(packId),
+  });
+}
+
 export function useRebuildEvidence() {
   const queryClient = useQueryClient();
   return useMutation({

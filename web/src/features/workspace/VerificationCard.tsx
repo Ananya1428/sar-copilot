@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { CHECK_NAMES, type VerificationSummary } from "@/api/types";
 import { StatusIcon } from "@/components/ui/StatusIcon";
 import { formatScore, titleCase } from "@/lib/format";
@@ -7,8 +9,18 @@ import { formatScore, titleCase } from "@/lib/format";
  * the real VerificationReport shape from Part 5's pipeline
  * (numeric/entity/temporal/prohibited/entailment/completeness), not a
  * mocked summary. Status is icon + text, never colour alone.
+ *
+ * A failed check is a real link into the Verification Detail screen
+ * (§18 Screen 3) — passed checks stay static rows, since there's nothing
+ * to drill into.
  */
-export function VerificationCard({ verification }: { verification: VerificationSummary | null }) {
+export function VerificationCard({
+  verification,
+  detailHref,
+}: {
+  verification: VerificationSummary | null;
+  detailHref?: (checkName: string) => string;
+}) {
   if (!verification) {
     return (
       <section aria-label="Verification" className="border-b border-rule p-4">
@@ -35,13 +47,24 @@ export function VerificationCard({ verification }: { verification: VerificationS
           const check = verification.checks[name];
           if (!check) return null;
           const status = check.passed ? "verified" : check.severity === "CRITICAL" ? "critical" : "caution";
-          return (
-            <li key={name} className="flex items-center justify-between gap-2 border-t border-rule pt-1.5 first:border-t-0 first:pt-0">
+          const rowContent = (
+            <>
               <span className="font-ui text-xs text-ink">{titleCase(name)}</span>
               <div className="flex items-center gap-2">
                 <span className="font-data text-2xs text-ink-muted">{formatScore(check.score)}</span>
                 <StatusIcon status={status} />
               </div>
+            </>
+          );
+          return (
+            <li key={name} className="border-t border-rule pt-1.5 first:border-t-0 first:pt-0">
+              {!check.passed && detailHref ? (
+                <Link to={detailHref(name)} className="-mx-1 flex items-center justify-between gap-2 rounded-sm px-1 hover:bg-canvas">
+                  {rowContent}
+                </Link>
+              ) : (
+                <div className="flex items-center justify-between gap-2">{rowContent}</div>
+              )}
             </li>
           );
         })}

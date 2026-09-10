@@ -62,6 +62,17 @@ export function CaseWorkspacePage() {
         </Link>
         <h1 className="font-data text-sm font-medium text-ink">{caseSummary?.case_ref ?? caseId}</h1>
         {caseSummary && <span className="font-ui text-xs text-ink-faint">{caseSummary.status}</span>}
+        {narrative && narrative.version > 1 && (
+          <Link
+            to={`/cases/${caseId}/narratives/${narrative.id}/diff/${narrative.version - 1}`}
+            className="font-ui text-xs text-ink-muted hover:text-ink"
+          >
+            Diff vs v{narrative.version - 1}
+          </Link>
+        )}
+        <Link to={`/cases/${caseId}/audit`} className="ml-auto font-ui text-xs text-ink-muted hover:text-ink">
+          Audit trail →
+        </Link>
       </header>
 
       <WorkspaceToolbar
@@ -107,7 +118,10 @@ export function CaseWorkspacePage() {
         </main>
 
         <aside className="min-h-0 w-[340px] shrink-0 overflow-y-auto border-l border-rule bg-panel">
-          <VerificationCard verification={narrative?.verification ?? null} />
+          <VerificationCard
+            verification={narrative?.verification ?? null}
+            detailHref={narrative ? (check) => `/cases/${caseId}/narratives/${narrative.id}/verification?check=${check}` : undefined}
+          />
           {pack && <EvidencePanel items={pack.items} />}
         </aside>
       </div>

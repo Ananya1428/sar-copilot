@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { useCases } from "@/api/hooks";
 import type { RiskBand } from "@/api/types";
@@ -36,9 +37,17 @@ export function CaseQueuePage() {
 
   return (
     <div className="min-h-full bg-canvas">
-      <header className="border-b border-rule bg-panel px-6 py-4">
-        <h1 className="font-ui text-lg font-semibold text-ink">Case Queue</h1>
-        <p className="mt-0.5 font-ui text-xs text-ink-muted">SAR Copilot — active investigations</p>
+      <header className="flex items-start justify-between border-b border-rule bg-panel px-6 py-4">
+        <div>
+          <h1 className="font-ui text-lg font-semibold text-ink">Case Queue</h1>
+          <p className="mt-0.5 font-ui text-xs text-ink-muted">SAR Copilot — active investigations</p>
+        </div>
+        <Link
+          to="/metrics"
+          className="rounded-sm border border-rule bg-paper px-3 py-1.5 font-ui text-xs font-medium text-ink hover:bg-canvas"
+        >
+          Quality Metrics
+        </Link>
       </header>
 
       <div className="flex flex-wrap items-center gap-3 border-b border-rule bg-panel px-6 py-3">

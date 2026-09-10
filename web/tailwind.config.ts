@@ -42,19 +42,17 @@ const config: Config = {
       lg: "var(--text-lg)",
       xl: "var(--text-xl)",
     },
-    spacing: {
-      0: "0",
-      1: "var(--space-1)",
-      2: "var(--space-2)",
-      3: "var(--space-3)",
-      4: "var(--space-4)",
-      5: "var(--space-5)",
-      6: "var(--space-6)",
-      8: "var(--space-8)",
-      10: "var(--space-10)",
-      12: "var(--space-12)",
-      16: "var(--space-16)",
-    },
+    // Spacing is deliberately NOT overridden here — Tailwind's default
+    // scale is already 4px-based (each step = 0.25rem = 4px), which is
+    // exactly blueprint §17's "4px-base spacing scale" and numerically
+    // identical to tokens.css's --space-* values at every integer step.
+    // An earlier version of this file replaced the scale with a partial
+    // hand-picked set of integer keys only, which silently dropped every
+    // fractional utility (h-1.5, px-2.5, gap-1.5, ...) used throughout
+    // the app — Tailwind emits nothing for an unrecognised key, so a bar
+    // chart's `h-1.5` height quietly rendered as zero. Keeping the full
+    // default scale (rather than hand-rolling a subset) avoids that
+    // whole bug class going forward.
     borderRadius: {
       none: "0",
       sm: "var(--radius-sm)",
