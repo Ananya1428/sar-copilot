@@ -8,6 +8,7 @@ Usage (inside the api container):
     python -m app.cli assemble-cases
     python -m app.cli build-evidence --all
     python -m app.cli generate-narrative --case-ref CASE-0001 --mode HYBRID
+    python -m app.cli create-user --email a@b.com --role analyst
 """
 
 import json
@@ -19,6 +20,7 @@ import typer
 from sqlalchemy import select
 
 from app.database import SessionLocal
+from app.domain.auth.users import VALID_ROLES, create_user, get_user_by_email
 from app.domain.detection.orchestrator import run_detection
 from app.domain.evidence.builder import build_evidence_pack, persist_evidence_pack
 from app.domain.evidence.case_assembly import assemble_cases
@@ -32,6 +34,16 @@ from app.models.evidence import EvidencePack as EvidencePackRow
 app = typer.Typer(help="SAR Copilot administrative CLI")
 
 DEFAULT_GROUND_TRUTH_PATH = Path("data/seed/ground_truth.json")
+
+# Local-demo-only throwaway accounts (Part 8a) — never for real deployment.
+# See README.md / MODEL_CARD.md for the same disclaimer next to these
+# credentials. One per RBAC §11.3 role so every gate can be demonstrated.
+DEMO_USERS = [
+    {"email": "analyst@sarcopilot.local", "password": "analyst-demo-123", "full_name": "Priya Analyst", "role": "analyst"},
+    {"email": "reviewer@sarcopilot.local", "password": "reviewer-demo-123", "full_name": "Marcus Reviewer", "role": "reviewer"},
+    {"email": "officer@sarcopilot.local", "password": "officer-demo-123", "full_name": "Anita Officer", "role": "officer"},
+    {"email": "admin@sarcopilot.local", "password": "admin-demo-123", "full_name": "Dev Admin", "role": "admin"},
+]
 
 
 @app.command("init-db")
@@ -62,6 +74,46 @@ def generate_data(
     typer.echo(json.dumps(summary, indent=2, default=str))
 
 
+@app.command("create-user")
+def create_user_cmd(
+    email: str = typer.Option(..., "--email"),
+    password: str = typer.Option(..., "--password", prompt=True, hide_input=True, confirmation_prompt=True),
+    full_name: str = typer.Option(..., "--full-name"),
+    role: str = typer.Option("analyst", "--role", help="analyst | reviewer | officer | admin"),
+) -> None:
+    """Create one real user with a bcrypt-hashed password (blueprint §11.3
+    roles). No self-signup UI exists — this is the only way to bootstrap an
+    account outside the `seed` command's demo users."""
+    if role not in VALID_ROLES:
+        typer.echo(f"Invalid role {role!r}; must be one of {sorted(VALID_ROLES)}", err=True)
+        raise typer.Exit(code=1)
+
+    session = SessionLocal()
+    try:
+        if get_user_by_email(session, email) is not None:
+            typer.echo(f"A user with email {email} already exists", err=True)
+            raise typer.Exit(code=1)
+        user = create_user(session, email=email, password=password, full_name=full_name, role=role)
+        session.commit()
+        user_id = user.id
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    typer.echo(f"Created user {email} (id={user_id}, role={role})")
+
+
+def _seed_demo_users(session) -> list[str]:
+    created = []
+    for spec in DEMO_USERS:
+        if get_user_by_email(session, spec["email"]) is None:
+            create_user(session, email=spec["email"], password=spec["password"], full_name=spec["full_name"], role=spec["role"])
+            created.append(spec["email"])
+    return created
+
+
 @app.command("seed")
 def seed(
     if_empty: bool = typer.Option(True, "--if-empty/--force", help="Skip if the database already has data"),
@@ -70,9 +122,16 @@ def seed(
     already committed at data/seed/ground_truth.json, its (accounts, days,
     seed) config is reproduced exactly — the generator is deterministic, so
     this recreates the same dataset without needing a raw data dump
-    committed to the repo. Otherwise falls back to a small fresh generation."""
+    committed to the repo. Otherwise falls back to a small fresh generation.
+    Also idempotently ensures the demo users in DEMO_USERS exist, one per
+    RBAC role, so Part 8c's login screen always has real accounts to use."""
     session = SessionLocal()
     try:
+        created_users = _seed_demo_users(session)
+        session.commit()
+        if created_users:
+            typer.echo(f"Created demo users: {', '.join(created_users)}")
+
         existing = session.query(Customer).count()
         if existing and if_empty:
             typer.echo(f"Database already has {existing} customers; skipping seed (--if-empty).")

@@ -1,4 +1,11 @@
+import warnings
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# >=32 bytes — PyJWT's InsecureKeyLengthWarning fires below that for
+# HS256/SHA256. Still an obvious placeholder; a real deployment must
+# override it via the JWT_SECRET env var (see the warning below).
+_INSECURE_DEFAULT_JWT_SECRET = "change-me-in-production-use-a-real-secret"
 
 
 class Settings(BaseSettings):
@@ -18,7 +25,10 @@ class Settings(BaseSettings):
     llm_model: str = "llama3.1:8b-instruct-q4_K_M"
     prompt_version: str = "v1.0.0"
 
-    jwt_secret: str = "change-me-in-production"
+    jwt_secret: str = _INSECURE_DEFAULT_JWT_SECRET
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
     cors_origins: str = "*"
 
     @property
@@ -29,3 +39,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+if settings.jwt_secret == _INSECURE_DEFAULT_JWT_SECRET and settings.environment != "development":
+    warnings.warn(
+        "JWT_SECRET is still the insecure placeholder default outside a development "
+        "environment. Set a real secret via the JWT_SECRET environment variable.",
+        stacklevel=2,
+    )

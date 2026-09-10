@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.deps import get_db
+from app.deps import get_db, require_role
 from app.models.narrative import Narrative
+from app.models.user import User
 from app.models.verification import VerificationReport
 
 router = APIRouter()
@@ -14,9 +15,10 @@ CHECK_TYPES = ["numeric", "entity", "temporal", "prohibited", "entailment", "com
 
 
 @router.get("/quality")
-def quality_metrics(db: Session = Depends(get_db)):
+def quality_metrics(db: Session = Depends(get_db), _user: User = Depends(require_role("reviewer", "officer", "admin"))):
     """blueprint §11.2 GET /metrics/quality — narrative quality dashboard
-    data, aggregated across every Narrative + VerificationReport row."""
+    data, aggregated across every Narrative + VerificationReport row. RBAC:
+    table §11.2 lists this as "reviewer+"."""
     narratives = db.scalars(select(Narrative)).all()
     reports = db.scalars(select(VerificationReport)).all()
 

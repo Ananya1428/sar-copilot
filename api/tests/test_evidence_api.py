@@ -38,7 +38,7 @@ def _seed_case_with_evidence(db_session):
     return pack_row.id
 
 
-def test_get_evidence_pack_by_id(db_session):
+def test_get_evidence_pack_by_id(db_session, make_auth_headers):
     pack_id = _seed_case_with_evidence(db_session)
 
     def _override_get_db():
@@ -47,7 +47,7 @@ def test_get_evidence_pack_by_id(db_session):
     app.dependency_overrides[get_db] = _override_get_db
     try:
         client = TestClient(app)
-        resp = client.get(f"/api/v1/evidence/{pack_id}")
+        resp = client.get(f"/api/v1/evidence/{pack_id}", headers=make_auth_headers("analyst"))
         assert resp.status_code == 200
         body = resp.json()
         assert body["pack_id"] == str(pack_id)
@@ -56,27 +56,29 @@ def test_get_evidence_pack_by_id(db_session):
         app.dependency_overrides.clear()
 
 
-def test_get_evidence_pack_by_id_404_for_unknown_id(db_session):
+def test_get_evidence_pack_by_id_404_for_unknown_id(db_session, make_auth_headers):
     def _override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = _override_get_db
     try:
         client = TestClient(app)
-        resp = client.get("/api/v1/evidence/00000000-0000-0000-0000-000000000000")
+        resp = client.get(
+            "/api/v1/evidence/00000000-0000-0000-0000-000000000000", headers=make_auth_headers("analyst")
+        )
         assert resp.status_code == 404
     finally:
         app.dependency_overrides.clear()
 
 
-def test_get_evidence_pack_by_id_400_for_invalid_id(db_session):
+def test_get_evidence_pack_by_id_400_for_invalid_id(db_session, make_auth_headers):
     def _override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = _override_get_db
     try:
         client = TestClient(app)
-        resp = client.get("/api/v1/evidence/not-a-uuid")
+        resp = client.get("/api/v1/evidence/not-a-uuid", headers=make_auth_headers("analyst"))
         assert resp.status_code == 400
     finally:
         app.dependency_overrides.clear()

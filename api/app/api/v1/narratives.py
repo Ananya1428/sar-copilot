@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.deps import get_current_user, get_db
+from app.deps import get_current_user, get_db, require_role
 from app.domain.audit.ledger import AuditLedger
 from app.domain.evidence.schema import EvidencePack as EvidencePackSchema
 from app.domain.narrative.engine import _next_narrative_version
@@ -14,6 +14,7 @@ from app.domain.verification.pipeline import Verifier
 from app.models.evidence import EvidencePack as EvidencePackRow
 from app.models.narrative import Narrative
 from app.models.narrative import NarrativeSentence as NarrativeSentenceRow
+from app.models.user import User
 from app.models.verification import VerificationReport as VerificationReportRow
 
 router = APIRouter()
@@ -77,8 +78,9 @@ def _narrative_dict(db: Session, narrative: Narrative) -> dict:
 
 
 @router.get("/{narrative_id}")
-def get_narrative(narrative_id: str, db: Session = Depends(get_db)):
-    """Returns a narrative with its sentences and per-sentence evidence_keys."""
+def get_narrative(narrative_id: str, db: Session = Depends(get_db), _user: User = Depends(get_current_user)):
+    """Returns a narrative with its sentences and per-sentence evidence_keys.
+    RBAC §11.3 "View case"-equivalent: any authenticated role."""
     narrative = _get_narrative_or_404(db, narrative_id)
     return _narrative_dict(db, narrative)
 
@@ -98,12 +100,13 @@ def edit_narrative(
     narrative_id: str,
     body: NarrativePatchRequest,
     db: Session = Depends(get_db),
-    user: dict = Depends(get_current_user),
+    user: User = Depends(require_role("analyst", "reviewer", "officer")),
 ):
     """blueprint §11.2 PATCH /narratives/{id} — an analyst's edited
     sentences become a NEW Narrative row (next version, same pack_id),
     re-verified through the same pipeline Part 5 built, with a
-    NARRATIVE_EDITED audit record carrying the before/after diff."""
+    NARRATIVE_EDITED audit record carrying the before/after diff. RBAC
+    §11.3 "Edit narrative": analyst, reviewer, officer — not admin."""
     narrative = _get_narrative_or_404(db, narrative_id)
     pack_row = db.get(EvidencePackRow, narrative.pack_id)
     if pack_row is None:
@@ -164,7 +167,7 @@ def edit_narrative(
     )
     AuditLedger(db).append(
         case_id=pack_row.case_id,
-        actor_id=user["id"],
+        actor_id=user.id,
         action="NARRATIVE_EDITED",
         before_state={"id": str(narrative.id), "version": narrative.version, "body": narrative.body},
         after_state={"id": str(new_narrative.id), "version": new_narrative.version, "body": new_narrative.body},
@@ -179,12 +182,18 @@ def edit_narrative(
 
 
 @router.get("/{narrative_id}/diff/{other_version}")
-def diff_narrative(narrative_id: str, other_version: int, db: Session = Depends(get_db)):
+def diff_narrative(
+    narrative_id: str,
+    other_version: int,
+    db: Session = Depends(get_db),
+    _user: User = Depends(require_role("reviewer", "officer", "admin")),
+):
     """blueprint §11.2 GET /narratives/{id}/diff/{v} — both versions'
     bodies/sentences, a line diff between them, and each version's
     verification score. `other_version` is a version NUMBER, resolved
     against the same case's narrative history (versions increment per
-    case, not per evidence pack — see engine.py's _next_narrative_version)."""
+    case, not per evidence pack — see engine.py's _next_narrative_version).
+    RBAC: table §11.2 lists this as "reviewer+"."""
     narrative = _get_narrative_or_404(db, narrative_id)
     pack_row = db.get(EvidencePackRow, narrative.pack_id)
     if pack_row is None:

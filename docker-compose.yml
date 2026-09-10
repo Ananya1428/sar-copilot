@@ -70,7 +70,7 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       LLM_MODEL: ${LLM_MODEL:-llama3.1:8b-instruct-q4_K_M}
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-use-a-real-secret}
       PROMPT_VERSION: ${PROMPT_VERSION:-v1.0.0}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
       ENVIRONMENT: ${ENVIRONMENT:-development}

@@ -14,6 +14,12 @@ networkx>=3.2
 scipy>=1.11
 jinja2>=3.1
 
+# Part 8a auth (blueprint §11.3) — password hashing + JWT issuance. bcrypt
+# used directly (not via passlib, which is unmaintained and warns against
+# bcrypt>=4.1); PyJWT chosen over python-jose for a single HS256 use case.
+bcrypt>=4.1,<5.0
+pyjwt>=2.8,<3.0
+
 # Part 5 semantic entailment check (blueprint §14.5) — a small local NLI
 # model. CPU-capable; runs on GPU automatically when available (see
 # domain/verification/semantic.py's device selection).

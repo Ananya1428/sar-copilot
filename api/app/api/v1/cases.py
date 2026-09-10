@@ -12,6 +12,7 @@ from app.domain.evidence.schema import EvidencePack as EvidencePackSchema
 from app.domain.narrative.engine import NarrativeEngine, persist_narrative
 from app.models.case import Case
 from app.models.evidence import EvidencePack as EvidencePackRow
+from app.models.user import User
 
 router = APIRouter()
 
@@ -40,26 +41,29 @@ def _get_case_or_404(db: Session, case_id: str) -> Case:
 
 
 @router.get("/")
-def list_cases(db: Session = Depends(get_db)):
-    """blueprint §11.2 GET /cases — id, case_ref, status, risk band/score, deadline."""
+def list_cases(db: Session = Depends(get_db), _user: User = Depends(get_current_user)):
+    """blueprint §11.2 GET /cases — id, case_ref, status, risk band/score,
+    deadline. RBAC §11.3 "View case": any authenticated role."""
     cases = db.scalars(select(Case).order_by(Case.deadline_at)).all()
     return [_case_summary(c) for c in cases]
 
 
 @router.post("/{case_id}/evidence/rebuild")
-def rebuild_evidence(case_id: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
+def rebuild_evidence(case_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """Builds a fresh EvidencePack for this case and persists it as a new,
-    immutable row (blueprint §9.2 P3 — never overwrites a prior pack)."""
+    immutable row (blueprint §9.2 P3 — never overwrites a prior pack). RBAC
+    §11.3 "Generate narrative": any authenticated role."""
     case = _get_case_or_404(db, case_id)
     pack = build_evidence_pack(db, case)
-    persist_evidence_pack(db, case, pack, actor_id=user["id"])
+    persist_evidence_pack(db, case, pack, actor_id=user.id)
     db.commit()
     return pack.model_dump(mode="json")
 
 
 @router.get("/{case_id}/evidence")
-def get_latest_evidence(case_id: str, db: Session = Depends(get_db)):
-    """Returns the most recently built EvidencePack for this case."""
+def get_latest_evidence(case_id: str, db: Session = Depends(get_db), _user: User = Depends(get_current_user)):
+    """Returns the most recently built EvidencePack for this case. RBAC
+    §11.3 "View case": any authenticated role."""
     case = _get_case_or_404(db, case_id)
     row = _latest_pack_row(db, case)
     if row is None:
@@ -75,24 +79,25 @@ def _latest_pack_row(db: Session, case: Case) -> EvidencePackRow | None:
 
 @router.post("/{case_id}/narrative")
 def generate_case_narrative(
-    case_id: str, mode: str = "HYBRID", seed: int = 42, db: Session = Depends(get_db), user: dict = Depends(get_current_user)
+    case_id: str, mode: str = "HYBRID", seed: int = 42, db: Session = Depends(get_db), user: User = Depends(get_current_user)
 ):
     """Generates a narrative for this case (blueprint §13), reusing the
     case's latest EvidencePack if one already exists rather than building
     a new one on every call — packs are immutable, so an existing one is
-    still exactly as valid as a fresh rebuild would be."""
+    still exactly as valid as a fresh rebuild would be. RBAC §11.3
+    "Generate narrative": any authenticated role."""
     case = _get_case_or_404(db, case_id)
 
     pack_row = _latest_pack_row(db, case)
     if pack_row is None:
         pack = build_evidence_pack(db, case)
-        pack_row = persist_evidence_pack(db, case, pack, actor_id=user["id"])
+        pack_row = persist_evidence_pack(db, case, pack, actor_id=user.id)
     else:
         pack = EvidencePackSchema.model_validate(pack_row.payload)
 
     engine = NarrativeEngine()
     result = engine.generate(pack, mode=mode, seed=seed)
-    narrative_row = persist_narrative(db, case, pack_row, result, actor_id=user["id"])
+    narrative_row = persist_narrative(db, case, pack_row, result, actor_id=user.id)
     db.commit()
     db.refresh(narrative_row)
 

@@ -9,7 +9,7 @@ from app.main import app
 from tests.factories import make_account, make_alert, make_customer
 
 
-def _seed_and_generate(db_session, ref_suffix: str) -> dict:
+def _seed_and_generate(db_session, ref_suffix: str, headers: dict) -> dict:
     customer = make_customer(legal_name="Metrics Test Subject", customer_ref=f"CUS-MET{ref_suffix}")
     account = make_account(customer=customer, account_ref=f"ACC-MET{ref_suffix}")
     db_session.add_all([customer, account])
@@ -33,18 +33,19 @@ def _seed_and_generate(db_session, ref_suffix: str) -> dict:
 
     app.dependency_overrides[get_db] = _override_get_db
     client = TestClient(app)
-    resp = client.post(f"/api/v1/cases/{alert.case_id}/narrative", params={"mode": "TEMPLATE"})
+    resp = client.post(f"/api/v1/cases/{alert.case_id}/narrative", params={"mode": "TEMPLATE"}, headers=headers)
     assert resp.status_code == 200
     return resp.json()
 
 
-def test_quality_metrics_reflects_generated_narratives(db_session):
+def test_quality_metrics_reflects_generated_narratives(db_session, make_auth_headers):
     try:
-        _seed_and_generate(db_session, "01")
-        _seed_and_generate(db_session, "02")
+        analyst_headers = make_auth_headers("analyst")
+        _seed_and_generate(db_session, "01", analyst_headers)
+        _seed_and_generate(db_session, "02", analyst_headers)
 
         client = TestClient(app)
-        resp = client.get("/api/v1/metrics/quality")
+        resp = client.get("/api/v1/metrics/quality", headers=make_auth_headers("reviewer"))
         assert resp.status_code == 200
         body = resp.json()
 

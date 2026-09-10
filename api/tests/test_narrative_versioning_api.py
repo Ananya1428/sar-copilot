@@ -9,7 +9,7 @@ from app.main import app
 from tests.factories import make_account, make_alert, make_customer
 
 
-def _seed_narrative(db_session) -> tuple[str, dict]:
+def _seed_narrative(db_session, headers: dict) -> tuple[str, dict]:
     customer = make_customer(legal_name="Versioning Test Subject", customer_ref="CUS-VER01")
     account = make_account(customer=customer, account_ref="ACC-VER01")
     db_session.add_all([customer, account])
@@ -34,13 +34,14 @@ def _seed_narrative(db_session) -> tuple[str, dict]:
 
     app.dependency_overrides[get_db] = _override_get_db
     client = TestClient(app)
-    resp = client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"})
+    resp = client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"}, headers=headers)
     assert resp.status_code == 200
     return case_id, resp.json()
 
 
-def test_patch_creates_a_new_version_and_reverifies(db_session):
-    case_id, original = _seed_narrative(db_session)
+def test_patch_creates_a_new_version_and_reverifies(db_session, make_auth_headers):
+    analyst_headers = make_auth_headers("analyst")
+    case_id, original = _seed_narrative(db_session, analyst_headers)
     client = TestClient(app)
     try:
         edited_sentences = [
@@ -51,7 +52,9 @@ def test_patch_creates_a_new_version_and_reverifies(db_session):
         # stays fully grounded in the same evidence it already cited.
         edited_sentences[0]["text"] = edited_sentences[0]["text"] + " (analyst reviewed.)"
 
-        resp = client.patch(f"/api/v1/narratives/{original['id']}", json={"sentences": edited_sentences})
+        resp = client.patch(
+            f"/api/v1/narratives/{original['id']}", json={"sentences": edited_sentences}, headers=analyst_headers
+        )
         assert resp.status_code == 200
         edited = resp.json()
 
@@ -60,15 +63,17 @@ def test_patch_creates_a_new_version_and_reverifies(db_session):
         assert edited["pack_id"] == original["pack_id"]
         assert "(analyst reviewed.)" in edited["body"]
 
-        # a NARRATIVE_EDITED audit record was written
-        trail = client.get(f"/api/v1/audit/case/{case_id}").json()
+        # a NARRATIVE_EDITED audit record was written — audit trail viewing
+        # is reviewer+ (RBAC §11.3), so a different role's token is needed here
+        trail = client.get(f"/api/v1/audit/case/{case_id}", headers=make_auth_headers("reviewer")).json()
         assert "NARRATIVE_EDITED" in [r["action"] for r in trail["records"]]
     finally:
         app.dependency_overrides.clear()
 
 
-def test_diff_endpoint_shows_both_versions_and_a_line_diff(db_session):
-    case_id, original = _seed_narrative(db_session)
+def test_diff_endpoint_shows_both_versions_and_a_line_diff(db_session, make_auth_headers):
+    analyst_headers = make_auth_headers("analyst")
+    case_id, original = _seed_narrative(db_session, analyst_headers)
     client = TestClient(app)
     try:
         edited_sentences = [
@@ -76,10 +81,15 @@ def test_diff_endpoint_shows_both_versions_and_a_line_diff(db_session):
             for s in original["sentences"]
         ]
         edited_sentences[0]["text"] = edited_sentences[0]["text"] + " (analyst reviewed.)"
-        patch_resp = client.patch(f"/api/v1/narratives/{original['id']}", json={"sentences": edited_sentences})
+        patch_resp = client.patch(
+            f"/api/v1/narratives/{original['id']}", json={"sentences": edited_sentences}, headers=analyst_headers
+        )
         edited = patch_resp.json()
 
-        diff_resp = client.get(f"/api/v1/narratives/{edited['id']}/diff/{original['version']}")
+        # diff viewing is reviewer+ (RBAC §11.3) — a different role's token
+        diff_resp = client.get(
+            f"/api/v1/narratives/{edited['id']}/diff/{original['version']}", headers=make_auth_headers("reviewer")
+        )
         assert diff_resp.status_code == 200
         diff_body = diff_resp.json()
 

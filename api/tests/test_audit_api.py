@@ -40,13 +40,13 @@ def _client(db_session) -> TestClient:
     return TestClient(app)
 
 
-def test_audit_trail_shows_case_opened_evidence_built_narrative_generated(db_session):
+def test_audit_trail_shows_case_opened_evidence_built_narrative_generated(db_session, make_auth_headers):
     case_id = _seed_case(db_session)
     client = _client(db_session)
     try:
-        client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"})
+        client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"}, headers=make_auth_headers("analyst"))
 
-        resp = client.get(f"/api/v1/audit/case/{case_id}")
+        resp = client.get(f"/api/v1/audit/case/{case_id}", headers=make_auth_headers("reviewer"))
         assert resp.status_code == 200
         body = resp.json()
         actions = [r["action"] for r in body["records"]]
@@ -61,26 +61,26 @@ def test_audit_trail_shows_case_opened_evidence_built_narrative_generated(db_ses
         app.dependency_overrides.clear()
 
 
-def test_verify_chain_passes_on_untouched_data(db_session):
+def test_verify_chain_passes_on_untouched_data(db_session, make_auth_headers):
     case_id = _seed_case(db_session)
     client = _client(db_session)
     try:
-        client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"})
+        client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"}, headers=make_auth_headers("analyst"))
 
-        resp = client.post("/api/v1/audit/verify-chain", json={"case_id": case_id})
+        resp = client.post("/api/v1/audit/verify-chain", json={"case_id": case_id}, headers=make_auth_headers("officer"))
         assert resp.status_code == 200
         assert resp.json() == {"valid": True, "broken_at": None, "reason": None}
     finally:
         app.dependency_overrides.clear()
 
 
-def test_verify_chain_detects_a_record_corrupted_directly_in_postgres(db_session):
+def test_verify_chain_detects_a_record_corrupted_directly_in_postgres(db_session, make_auth_headers):
     case_id = _seed_case(db_session)
     client = _client(db_session)
     try:
-        client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"})
+        client.post(f"/api/v1/cases/{case_id}/narrative", params={"mode": "TEMPLATE"}, headers=make_auth_headers("analyst"))
 
-        trail = client.get(f"/api/v1/audit/case/{case_id}").json()
+        trail = client.get(f"/api/v1/audit/case/{case_id}", headers=make_auth_headers("reviewer")).json()
         evidence_built = next(r for r in trail["records"] if r["action"] == "EVIDENCE_BUILT")
 
         db_session.execute(
@@ -89,7 +89,7 @@ def test_verify_chain_detects_a_record_corrupted_directly_in_postgres(db_session
         )
         db_session.flush()
 
-        resp = client.post("/api/v1/audit/verify-chain", json={"case_id": case_id})
+        resp = client.post("/api/v1/audit/verify-chain", json={"case_id": case_id}, headers=make_auth_headers("officer"))
         assert resp.status_code == 200
         result = resp.json()
         assert result["valid"] is False

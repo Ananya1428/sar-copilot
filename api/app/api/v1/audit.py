@@ -5,10 +5,11 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.deps import get_db
+from app.deps import get_db, require_role
 from app.domain.audit.ledger import AuditLedger
 from app.models.audit import AuditRecord
 from app.models.case import Case
+from app.models.user import User
 
 router = APIRouter()
 
@@ -43,9 +44,12 @@ def _record_dict(record: AuditRecord) -> dict:
 
 
 @router.get("/case/{case_id}")
-def get_case_audit_trail(case_id: str, db: Session = Depends(get_db)):
+def get_case_audit_trail(
+    case_id: str, db: Session = Depends(get_db), _user: User = Depends(require_role("reviewer", "officer", "admin"))
+):
     """blueprint §11.2 GET /audit/case/{id} — the full audit trail for a
-    case, chronological, each record's before/after/metadata."""
+    case, chronological, each record's before/after/metadata. RBAC §11.3
+    "View audit chain": reviewer, officer, admin — not analyst."""
     cid = _parse_uuid(case_id, "case id")
     case = _get_case_or_404(db, cid)
 
@@ -60,10 +64,13 @@ class VerifyChainRequest(BaseModel):
 
 
 @router.post("/verify-chain")
-def verify_chain(body: VerifyChainRequest, db: Session = Depends(get_db)):
+def verify_chain(
+    body: VerifyChainRequest, db: Session = Depends(get_db), _user: User = Depends(require_role("officer", "admin"))
+):
     """blueprint §11.2 POST /audit/verify-chain, §15.1 verify_chain() —
     recomputes the case's whole hash chain and reports the exact record
-    where it breaks, if any."""
+    where it breaks, if any. RBAC §11.3 "Verify chain integrity": officer,
+    admin only."""
     cid = _parse_uuid(body.case_id, "case id")
     _get_case_or_404(db, cid)
 

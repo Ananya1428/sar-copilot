@@ -4,12 +4,15 @@ the api service's startup command. Each test runs inside a SAVEPOINT that
 is rolled back afterward, so tests never pollute the seeded dataset and
 never need their own schema setup."""
 
+import uuid
 from contextlib import contextmanager
 
 import pytest
 from sqlalchemy.orm import sessionmaker
 
 from app.database import engine
+from app.domain.auth.security import create_access_token, hash_password
+from app.models.user import User
 
 
 @contextmanager
@@ -51,3 +54,38 @@ def session_factory():
     used to hang.)
     """
     return isolated_session
+
+
+@pytest.fixture()
+def make_user(db_session):
+    """Creates and flushes a real User row — password 'test-password-123' —
+    so API tests exercise real bcrypt hashing and real JWTs (Part 8a),
+    never a get_current_user bypass."""
+
+    def _make(role: str = "analyst", email: str | None = None, is_active: bool = True) -> User:
+        user = User(
+            email=email or f"{role}-{uuid.uuid4().hex[:8]}@test.local",
+            hashed_password=hash_password("test-password-123"),
+            full_name=f"Test {role.title()}",
+            role=role,
+            is_active=is_active,
+        )
+        db_session.add(user)
+        db_session.flush()
+        return user
+
+    return _make
+
+
+@pytest.fixture()
+def make_auth_headers(make_user):
+    """Real `Authorization: Bearer <jwt>` headers backed by a real user and
+    a real access token — the fixture every API test should use instead of
+    relying on any kind of auth bypass."""
+
+    def _make(role: str = "analyst", user: User | None = None) -> dict[str, str]:
+        u = user or make_user(role=role)
+        token = create_access_token(str(u.id), u.role)
+        return {"Authorization": f"Bearer {token}"}
+
+    return _make
