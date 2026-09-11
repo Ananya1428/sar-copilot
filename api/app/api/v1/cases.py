@@ -5,9 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.v1.narratives import _narrative_dict
-from app.deps import get_current_user, get_db
+from app.deps import get_current_user, get_db, require_role
 from app.domain.detection.scoring import band_for_score
 from app.domain.evidence.builder import build_evidence_pack, persist_evidence_pack
+from app.domain.evidence.case_assembly import assemble_cases
 from app.domain.evidence.schema import EvidencePack as EvidencePackSchema
 from app.domain.narrative.engine import NarrativeEngine, persist_narrative
 from app.models.case import Case
@@ -15,6 +16,24 @@ from app.models.evidence import EvidencePack as EvidencePackRow
 from app.models.user import User
 
 router = APIRouter()
+
+
+@router.post("/assemble")
+def assemble_cases_endpoint(db: Session = Depends(get_db), user: User = Depends(require_role("admin"))):
+    """Wires domain/evidence/case_assembly.py's assemble_cases() (blueprint
+    §8 Journey B: groups HIGH/MEDIUM alerts into opened Cases), previously
+    CLI-only (`python -m app.cli assemble-cases`).
+
+    RBAC: not in blueprint §11.3's matrix (that table predates data entry
+    and this endpoint). Gated the same as POST /detection/run — admin
+    only — because, like that endpoint, this is a global batch operation
+    over every open alert in the system, not scoped to one case/account.
+    That's the same "batch" category §11.3 already reserves for admin;
+    the per-entity onboarding endpoints in onboarding.py are gated
+    differently (any authenticated role) for the opposite reason."""
+    summary = assemble_cases(db, actor_id=user.id)
+    db.commit()
+    return summary
 
 
 def _case_summary(case: Case) -> dict:
