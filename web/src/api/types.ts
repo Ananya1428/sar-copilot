@@ -5,6 +5,69 @@
  * api/app/domain/evidence/schema.py.
  */
 
+/** api/app/api/v1/auth.py TokenResponse */
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+}
+
+/** api/app/api/v1/onboarding.py _customer_dict */
+export interface CustomerRecord {
+  id: string;
+  customer_ref: string;
+  legal_name: string;
+  entity_type: "individual" | "business";
+  onboarded_at: string;
+  risk_rating: "LOW" | "MEDIUM" | "HIGH";
+  occupation: string | null;
+  country: string;
+}
+
+/** api/app/api/v1/onboarding.py _account_dict */
+export interface AccountRecord {
+  id: string;
+  customer_id: string;
+  account_ref: string;
+  account_type: "checking" | "savings" | "business";
+  currency: string;
+  opened_at: string;
+  expected_monthly_volume: number;
+  status: string;
+}
+
+/** api/app/api/v1/onboarding.py _transaction_dict */
+export interface TransactionRecord {
+  id: string;
+  account_id: string;
+  txn_ref: string;
+  executed_at: string;
+  amount: number;
+  currency: string;
+  direction: "credit" | "debit";
+  channel: "cash" | "wire" | "ach" | "card" | "check";
+  counterparty_ref: string | null;
+  counterparty_country: string | null;
+  is_cash: boolean;
+}
+
+/** api/app/domain/detection/orchestrator.py run_detection() return value */
+export interface DetectionSummary {
+  accounts_evaluated: number;
+  alerts_created: number;
+  band_counts: Record<string, number>;
+  ml_ensemble_fitted?: boolean;
+}
+
+/** api/app/domain/evidence/case_assembly.py assemble_cases() return value */
+export interface AssembleSummary {
+  accounts_considered: number;
+  cases_created: number;
+  cases_reused: number;
+  alerts_linked: number;
+}
+
 export type RiskBand = "LOW" | "MEDIUM" | "HIGH";
 
 export interface CaseSummary {

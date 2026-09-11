@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { useCases } from "@/api/hooks";
 import type { RiskBand } from "@/api/types";
+import { AuthBadge } from "@/features/auth/AuthBadge";
 
 import { CaseQueueTable } from "./CaseQueueTable";
 import { useEnrichedCases } from "./useEnrichedCases";
@@ -42,12 +43,21 @@ export function CaseQueuePage() {
           <h1 className="font-ui text-lg font-semibold text-ink">Case Queue</h1>
           <p className="mt-0.5 font-ui text-xs text-ink-muted">SAR Copilot — active investigations</p>
         </div>
-        <Link
-          to="/metrics"
-          className="rounded-sm border border-rule bg-paper px-3 py-1.5 font-ui text-xs font-medium text-ink hover:bg-canvas"
-        >
-          Quality Metrics
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/data-entry"
+            className="rounded-sm border border-rule bg-paper px-3 py-1.5 font-ui text-xs font-medium text-ink hover:bg-canvas"
+          >
+            + Add data
+          </Link>
+          <Link
+            to="/metrics"
+            className="rounded-sm border border-rule bg-paper px-3 py-1.5 font-ui text-xs font-medium text-ink hover:bg-canvas"
+          >
+            Quality Metrics
+          </Link>
+          <AuthBadge />
+        </div>
       </header>
 
       <div className="flex flex-wrap items-center gap-3 border-b border-rule bg-panel px-6 py-3">

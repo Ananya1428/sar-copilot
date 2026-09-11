@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useAuditTrail, useNarrativeDiff } from "@/api/hooks";
 import type { AuditRecord } from "@/api/types";
 import { StatusIcon } from "@/components/ui/StatusIcon";
+import { AuthBadge } from "@/features/auth/AuthBadge";
 import { formatScore } from "@/lib/format";
 
 /** Finds the audit record documenting how a specific narrative version
@@ -97,6 +98,9 @@ export function VersionDiffPage() {
           ← Case Workspace
         </Link>
         <h1 className="font-ui text-sm font-semibold text-ink">Version diff</h1>
+        <div className="ml-auto">
+          <AuthBadge />
+        </div>
       </header>
 
       <main className="px-6 py-6">

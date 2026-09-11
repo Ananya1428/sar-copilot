@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useEvidencePackById, useNarrative } from "@/api/hooks";
 import { CHECK_NAMES, type CheckName, type CheckViolation, type EvidenceItem, type NarrativeSentence } from "@/api/types";
 import { StatusIcon, type Status } from "@/components/ui/StatusIcon";
+import { AuthBadge } from "@/features/auth/AuthBadge";
 import { formatScore, titleCase } from "@/lib/format";
 import { groundedItems } from "@/lib/grounding";
 
@@ -95,6 +96,9 @@ export function VerificationDetailPage() {
         </Link>
         <h1 className="font-ui text-sm font-semibold text-ink">Verification detail</h1>
         {narrative && <span className="font-data text-xs text-ink-faint">narrative v{narrative.version}</span>}
+        <div className="ml-auto">
+          <AuthBadge />
+        </div>
       </header>
 
       {isLoading ? (

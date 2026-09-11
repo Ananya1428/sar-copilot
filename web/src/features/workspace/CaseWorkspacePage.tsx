@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { useCases, useEditNarrative, useEvidencePack, useGenerateNarrative, useNarrative } from "@/api/hooks";
+import { AuthBadge } from "@/features/auth/AuthBadge";
 
 import { CaseRail } from "./CaseRail";
 import { EditableNarrative } from "./EditableNarrative";
@@ -73,6 +74,7 @@ export function CaseWorkspacePage() {
         <Link to={`/cases/${caseId}/audit`} className="ml-auto font-ui text-xs text-ink-muted hover:text-ink">
           Audit trail →
         </Link>
+        <AuthBadge />
       </header>
 
       <WorkspaceToolbar

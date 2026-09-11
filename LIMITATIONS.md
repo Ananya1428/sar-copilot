@@ -170,6 +170,20 @@ cost against a larger hosted model. The verification pipeline exists
 precisely because this trade-off is real, not because it's been
 eliminated.
 
+### JWTs are stored in localStorage, not httpOnly cookies
+
+Part 8c's frontend persists the access/refresh JWTs issued by
+`POST /api/v1/auth/login` to `localStorage` (`web/src/stores/authStore.ts`)
+so a page refresh doesn't log the user out. `localStorage` is readable by
+any JavaScript running on the page, so a successful XSS anywhere in the
+app would be able to read and exfiltrate these tokens — an httpOnly
+cookie, by contrast, is never exposed to page script at all. This is an
+accepted trade-off for a local, single-user demo project with no
+third-party script surface, not a decision that would survive contact
+with a real deployment: that would need httpOnly, `SameSite` cookies
+(plus CSRF protection, since cookies are sent automatically) or a proper
+server-side session-management layer in place of client-held JWTs.
+
 ---
 
 ## Ethical considerations

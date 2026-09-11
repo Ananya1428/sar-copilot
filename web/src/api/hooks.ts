@@ -2,19 +2,95 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "./client";
 import type {
+  AccountRecord,
+  AssembleSummary,
   AuditTrail,
   CaseSummary,
   ChainVerifyResult,
+  CustomerRecord,
+  DetectionSummary,
   EvidencePack,
   Narrative,
   NarrativeDiff,
   QualityMetrics,
+  TokenResponse,
+  TransactionRecord,
 } from "./types";
+
+export function useLogin() {
+  return useMutation({
+    mutationFn: (creds: { email: string; password: string }) => api.post<TokenResponse>("/auth/login", creds),
+  });
+}
 
 export function useCases() {
   return useQuery({
     queryKey: ["cases"],
     queryFn: () => api.get<CaseSummary[]>("/cases/"),
+  });
+}
+
+// --- Part 8b onboarding endpoints (api/app/api/v1/onboarding.py) ---
+
+export interface CustomerCreateInput {
+  legal_name: string;
+  entity_type: "individual" | "business";
+  onboarded_at: string;
+  risk_rating: "LOW" | "MEDIUM" | "HIGH";
+  occupation?: string | null;
+  country: string;
+}
+
+export function useCreateCustomer() {
+  return useMutation({
+    mutationFn: (input: CustomerCreateInput) => api.post<CustomerRecord>("/customers/", input),
+  });
+}
+
+export interface AccountCreateInput {
+  account_type: "checking" | "savings" | "business";
+  currency: string;
+  opened_at: string;
+  expected_monthly_volume: string;
+}
+
+export function useCreateAccount(customerId: string | undefined) {
+  return useMutation({
+    mutationFn: (input: AccountCreateInput) => api.post<AccountRecord>(`/customers/${customerId}/accounts`, input),
+  });
+}
+
+export interface TransactionCreateInput {
+  amount: string;
+  currency: string;
+  direction: "credit" | "debit";
+  channel: "cash" | "wire" | "ach" | "card" | "check";
+  executed_at: string;
+  counterparty_ref?: string | null;
+  counterparty_country?: string | null;
+  is_cash: boolean;
+}
+
+export function useCreateTransaction(accountId: string | undefined) {
+  return useMutation({
+    mutationFn: (input: TransactionCreateInput) =>
+      api.post<TransactionRecord>(`/accounts/${accountId}/transactions`, input),
+  });
+}
+
+export function useRunDetection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<DetectionSummary>("/detection/run"),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cases"] }),
+  });
+}
+
+export function useAssembleCases() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<AssembleSummary>("/cases/assemble"),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cases"] }),
   });
 }
 

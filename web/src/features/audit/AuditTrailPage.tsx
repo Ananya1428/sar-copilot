@@ -5,6 +5,7 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useAuditTrail, useVerifyChain } from "@/api/hooks";
 import type { AuditRecord, ChainVerifyResult } from "@/api/types";
 import { StatusIcon } from "@/components/ui/StatusIcon";
+import { AuthBadge } from "@/features/auth/AuthBadge";
 
 /** Takes the verify-chain mutation as a prop rather than owning its own —
  * the ledger below needs to read the SAME live result (to highlight
@@ -125,6 +126,9 @@ export function AuditTrailPage() {
         </Link>
         <h1 className="font-ui text-sm font-semibold text-ink">Audit trail</h1>
         {trail && <span className="font-data text-xs text-ink-faint">{trail.case_ref}</span>}
+        <div className="ml-auto">
+          <AuthBadge />
+        </div>
       </header>
 
       <ChainIntegrityHeader caseId={caseId} verify={verify} />

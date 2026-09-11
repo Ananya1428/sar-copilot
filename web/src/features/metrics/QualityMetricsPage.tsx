@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useQualityMetrics } from "@/api/hooks";
 import { MetricBar } from "@/components/ui/MetricBar";
 import { CHECK_NAMES } from "@/api/types";
+import { AuthBadge } from "@/features/auth/AuthBadge";
 import { titleCase } from "@/lib/format";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -24,6 +25,9 @@ export function QualityMetricsPage() {
           ← Case Queue
         </Link>
         <h1 className="font-ui text-lg font-semibold text-ink">Quality Metrics</h1>
+        <div className="ml-auto">
+          <AuthBadge />
+        </div>
       </header>
 
       <main className="mx-auto flex max-w-4xl flex-col gap-4 px-6 py-6">
